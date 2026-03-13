@@ -64,7 +64,7 @@ export const authAPI = {
       email,
       password,
       fullName,
-      confirmPassword  // ADD THIS FIELD
+      confirmPassword
     });
   },
 };

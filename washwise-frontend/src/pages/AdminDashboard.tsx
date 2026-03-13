@@ -1,301 +1,408 @@
 import { useState, useEffect } from 'react';
-import { BarChart3, Shirt, Plus, Settings, AlertCircle, Loader, CheckCircle, Clock } from 'lucide-react';
-import { ordersAPI, servicesAPI } from '../services/api';
-
-interface Service {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  isActive: boolean;
-}
-
-interface Order {
-  id: string;
-  serviceName: string;
-  email: string;
-  status: string;
-  totalPrice: number;
-  location: string;
-  scheduledDate: string;
-}
+import { useNavigate } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  Package, 
+  Settings, 
+  Users, 
+  TrendingUp, 
+  Clock, 
+  DollarSign, 
+  UserCircle,
+  LogOut,
+  Droplets,
+  ChevronRight
+} from 'lucide-react';
+import { useAuthStore } from '../store/authStore';
+import { ordersAPI } from '../services/api';
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'orders' | 'services'>('orders');
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showServiceForm, setShowServiceForm] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    category: '',
-    duration: '',
+  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [stats, setStats] = useState({
+    totalOrders: 0,
+    activeOrders: 0,
+    revenue: 0,
+    users: 0
   });
+  const [orders, setOrders] = useState<any[]>([]);
+  const [statusBreakdown, setStatusBreakdown] = useState<any>({});
 
   useEffect(() => {
-    fetchData();
-  }, [activeTab]);
+    fetchDashboardData();
+  }, []);
 
-  const fetchData = async () => {
+  const fetchDashboardData = async () => {
     try {
-      setLoading(true);
-      if (activeTab === 'orders') {
-        const { data } = await ordersAPI.getAllOrders();
-        setOrders(data.data);
-      } else {
-        const { data } = await servicesAPI.getServices(0, 100);
-        setServices(data.data.content);
-      }
-    } catch (err) {
-      console.error('Failed to load data');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreateService = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await servicesAPI.createService({
-        ...formData,
-        price: parseFloat(formData.price),
-        isActive: true,
+      const { data } = await ordersAPI.getAllOrders();
+      const allOrders = data.data || [];
+      
+      // Calculate stats
+      setStats({
+        totalOrders: allOrders.length,
+        activeOrders: allOrders.filter((o: any) => 
+          ['PENDING', 'RECEIVED', 'WASHING', 'DRYING', 'READY'].includes(o.status)
+        ).length,
+        revenue: allOrders.reduce((sum: number, o: any) => sum + (o.totalPrice || 0), 0),
+        users: 5 // Mock data - replace with actual user count
       });
-      alert('Service created successfully');
-      setFormData({ name: '', description: '', price: '', category: '', duration: '' });
-      setShowServiceForm(false);
-      fetchData();
-    } catch (err) {
-      alert('Failed to create service');
+
+      // Status breakdown
+      const breakdown = allOrders.reduce((acc: any, order: any) => {
+        acc[order.status] = (acc[order.status] || 0) + 1;
+        return acc;
+      }, {});
+      setStatusBreakdown(breakdown);
+
+      // Recent orders (top 3)
+      setOrders(allOrders.slice(0, 3));
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
     }
   };
 
-  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
-    try {
-      await ordersAPI.updateOrder(orderId, { status: newStatus });
-      alert('Order updated successfully');
-      fetchData();
-    } catch (err) {
-      alert('Failed to update order');
-    }
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const getStatusColor = (status: string) => {
+    const colors: any = {
+      PENDING: 'bg-yellow-100 text-yellow-700',
+      RECEIVED: 'bg-blue-100 text-blue-700',
+      WASHING: 'bg-purple-100 text-purple-700',
+      DRYING: 'bg-orange-100 text-orange-700',
+      READY: 'bg-green-100 text-green-700',
+      COMPLETED: 'bg-gray-100 text-gray-700'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-700';
+  };
+
+  const getStatusIcon = (status: string) => {
+    const icons: any = {
+      PENDING: '⏱️',
+      RECEIVED: '📦',
+      WASHING: '🔄',
+      DRYING: '☀️',
+      READY: '✅',
+      COMPLETED: '✓'
+    };
+    return icons[status] || '•';
+  };
+
+  const getStatusProgress = (status: string) => {
+    const total = stats.totalOrders || 1;
+    const count = statusBreakdown[status] || 0;
+    return Math.round((count / total) * 100);
   };
 
   return (
-    <div className="bg-white">
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4 flex items-center gap-3">
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <BarChart3 size={36} className="text-blue-600" />
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        {/* Logo */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="bg-blue-600 p-2 rounded-xl">
+              <Droplets className="text-white" size={24} />
             </div>
-            Admin Dashboard
-          </h1>
-          <p className="text-gray-600 text-lg">Manage orders and services</p>
-        </div>
-
-        {/* TABS */}
-        <div className="flex gap-4 mb-8 border-b border-gray-200">
-          <button
-            onClick={() => setActiveTab('orders')}
-            className={`px-6 py-3 font-semibold flex items-center gap-2 border-b-2 transition ${
-              activeTab === 'orders'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            <Clock size={20} />
-            Orders
-          </button>
-          <button
-            onClick={() => setActiveTab('services')}
-            className={`px-6 py-3 font-semibold flex items-center gap-2 border-b-2 transition ${
-              activeTab === 'services'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            <Shirt size={20} />
-            Services
-          </button>
-        </div>
-
-        {/* ORDERS TAB */}
-        {activeTab === 'orders' && (
-          <div>
-            {loading ? (
-              <div className="text-center py-12">
-                <Loader size={48} className="animate-spin mx-auto text-blue-600 mb-4" />
-                <p className="text-gray-600">Loading orders...</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-4">
-                {orders.map((order) => (
-                  <div key={order.id} className="bg-gray-50 p-6 rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-1">
-                          <Shirt size={22} className="text-blue-600" />
-                          {order.serviceName}
-                        </h3>
-                        <p className="text-gray-600 text-sm">{order.email}</p>
-                        <p className="text-gray-500 text-sm">{order.location}</p>
-                      </div>
-                      <span className="text-2xl font-bold text-green-600">${order.totalPrice}</span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-gray-600 text-sm font-semibold mb-1">Scheduled Pickup</p>
-                        <p className="text-sm text-gray-900">{new Date(order.scheduledDate).toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <label className="block text-gray-700 text-sm font-semibold mb-2">Update Status</label>
-                        <select
-                          value={order.status}
-                          onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
-                          className="px-3 py-2 border border-gray-300 rounded-lg font-medium text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
-                        >
-                          <option value="PENDING">PENDING</option>
-                          <option value="CONFIRMED">CONFIRMED</option>
-                          <option value="COMPLETED">COMPLETED</option>
-                          <option value="CANCELLED">CANCELLED</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">WashWise</h1>
+              <p className="text-xs text-gray-500">Admin Panel</p>
+            </div>
           </div>
-        )}
+        </div>
 
-        {/* SERVICES TAB */}
-        {activeTab === 'services' && (
-          <div>
+        {/* Navigation */}
+        <nav className="flex-1 p-4">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            MANAGEMENT
+          </p>
+          <div className="space-y-1">
             <button
-              onClick={() => setShowServiceForm(!showServiceForm)}
-              className="mb-8 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center gap-2"
+              onClick={() => setActiveTab('overview')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
+                activeTab === 'overview'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
             >
-              <Plus size={20} />
-              {showServiceForm ? 'Cancel' : 'Create Service'}
+              <LayoutDashboard size={20} />
+              <span>Overview</span>
             </button>
 
-            {showServiceForm && (
-              <div className="bg-gray-50 p-8 rounded-xl border border-gray-200 mb-8">
-                <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <div className="bg-blue-100 p-2 rounded-lg">
-                    <Settings size={24} className="text-blue-600" />
-                  </div>
-                  Create New Service
-                </h3>
-                <form onSubmit={handleCreateService}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-gray-900 mb-2 font-semibold">Service Name</label>
-                      <input
-                        type="text"
-                        placeholder="e.g., Regular Wash & Iron"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-gray-900"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-900 mb-2 font-semibold">Price ($)</label>
-                      <input
-                        type="number"
-                        placeholder="0.00"
-                        value={formData.price}
-                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-gray-900"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-900 mb-2 font-semibold">Category</label>
-                      <input
-                        type="text"
-                        placeholder="e.g., Laundry, Dry Cleaning"
-                        value={formData.category}
-                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-gray-900"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-900 mb-2 font-semibold">Turnaround Time</label>
-                      <input
-                        type="text"
-                        placeholder="e.g., 2-3 days"
-                        value={formData.duration}
-                        onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-gray-900"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-gray-900 mb-2 font-semibold">Description</label>
-                    <textarea
-                      placeholder="Service description..."
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-gray-900"
-                      rows={4}
-                      required
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
-                  >
-                    <Plus size={20} />
-                    Create Service
-                  </button>
-                </form>
-              </div>
-            )}
+            <button
+              onClick={() => setActiveTab('services')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
+                activeTab === 'services'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <Settings size={20} />
+              <span>Services</span>
+            </button>
 
-            {loading ? (
-              <div className="text-center py-12">
-                <Loader size={48} className="animate-spin mx-auto text-blue-600 mb-4" />
-                <p className="text-gray-600">Loading services...</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {services.map((service) => (
-                  <div key={service.id} className="bg-gray-50 p-6 rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                      <Shirt size={20} className="text-blue-600" />
-                      {service.name}
-                    </h3>
-                    <p className="text-gray-600 mb-4 text-sm">{service.category}</p>
-                    <p className="text-2xl font-bold text-green-600 mb-4">${service.price}</p>
-                    <span className={`px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-2 inline-flex ${
-                      service.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {service.isActive ? (
-                        <>
-                          <CheckCircle size={16} />
-                          Active
-                        </>
-                      ) : (
-                        <>
-                          <AlertCircle size={16} />
-                          Inactive
-                        </>
-                      )}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <button
+              onClick={() => setActiveTab('orders')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
+                activeTab === 'orders'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <Package size={20} />
+              <span>Orders</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
+                activeTab === 'users'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <Users size={20} />
+              <span>Users</span>
+            </button>
           </div>
-        )}
-      </div>
+        </nav>
+
+        {/* User Profile */}
+        <div className="p-4 border-t border-gray-200">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center">
+              <UserCircle className="text-white" size={24} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-gray-900 text-sm truncate">{user?.fullName || 'Admin'}</p>
+              <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+            </div>
+          </div>
+          <div className="inline-block bg-gray-900 text-white text-xs px-3 py-1 rounded-full font-medium mb-4">
+            Admin
+          </div>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg font-medium transition-all"
+          >
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto">
+        <div className="p-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Overview</h1>
+            <p className="text-gray-600">Welcome back, {user?.fullName?.split(' ')[0]}! Here's what's happening.</p>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {/* Total Orders */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
+              <div className="flex items-start justify-between mb-4">
+                <div className="bg-blue-100 p-3 rounded-xl">
+                  <Package className="text-blue-600" size={24} />
+                </div>
+                <span className="text-xs font-medium text-gray-500 uppercase">Total Orders</span>
+              </div>
+              <div className="text-4xl font-bold text-gray-900 mb-1">{stats.totalOrders}</div>
+              <p className="text-sm text-gray-600">All time</p>
+            </div>
+
+            {/* Active Orders */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
+              <div className="flex items-start justify-between mb-4">
+                <div className="bg-yellow-100 p-3 rounded-xl">
+                  <Clock className="text-yellow-600" size={24} />
+                </div>
+                <span className="text-xs font-medium text-gray-500 uppercase">Active</span>
+              </div>
+              <div className="text-4xl font-bold text-gray-900 mb-1">{stats.activeOrders}</div>
+              <p className="text-sm text-yellow-600 font-medium">In progress</p>
+            </div>
+
+            {/* Revenue */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
+              <div className="flex items-start justify-between mb-4">
+                <div className="bg-green-100 p-3 rounded-xl">
+                  <TrendingUp className="text-green-600" size={24} />
+                </div>
+                <span className="text-xs font-medium text-gray-500 uppercase">Revenue</span>
+              </div>
+              <div className="text-4xl font-bold text-gray-900 mb-1">${stats.revenue}</div>
+              <p className="text-sm text-green-600 font-medium">Total earned</p>
+            </div>
+
+            {/* Users */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
+              <div className="flex items-start justify-between mb-4">
+                <div className="bg-purple-100 p-3 rounded-xl">
+                  <Users className="text-purple-600" size={24} />
+                </div>
+                <span className="text-xs font-medium text-gray-500 uppercase">Users</span>
+              </div>
+              <div className="text-4xl font-bold text-gray-900 mb-1">{stats.users}</div>
+              <p className="text-sm text-gray-600">Registered</p>
+            </div>
+          </div>
+
+          {/* Two Column Layout */}
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Order Status Breakdown */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900 mb-6">Order Status Breakdown</h3>
+              <div className="space-y-4">
+                {/* Pending */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{getStatusIcon('PENDING')}</span>
+                      <span className="font-medium text-gray-700">Pending</span>
+                    </div>
+                    <span className="font-bold text-gray-900">{statusBreakdown.PENDING || 0}</span>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-600 rounded-full transition-all"
+                      style={{ width: `${getStatusProgress('PENDING')}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Received */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{getStatusIcon('RECEIVED')}</span>
+                      <span className="font-medium text-gray-700">Received</span>
+                    </div>
+                    <span className="font-bold text-gray-900">{statusBreakdown.RECEIVED || 0}</span>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-600 rounded-full transition-all"
+                      style={{ width: `${getStatusProgress('RECEIVED')}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Washing */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{getStatusIcon('WASHING')}</span>
+                      <span className="font-medium text-gray-700">Washing</span>
+                    </div>
+                    <span className="font-bold text-gray-900">{statusBreakdown.WASHING || 0}</span>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-600 rounded-full transition-all"
+                      style={{ width: `${getStatusProgress('WASHING')}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Drying */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{getStatusIcon('DRYING')}</span>
+                      <span className="font-medium text-gray-700">Drying</span>
+                    </div>
+                    <span className="font-bold text-gray-900">{statusBreakdown.DRYING || 0}</span>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-600 rounded-full transition-all"
+                      style={{ width: `${getStatusProgress('DRYING')}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Ready */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{getStatusIcon('READY')}</span>
+                      <span className="font-medium text-gray-700">Ready</span>
+                    </div>
+                    <span className="font-bold text-gray-900">{statusBreakdown.READY || 0}</span>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-600 rounded-full transition-all"
+                      style={{ width: `${getStatusProgress('READY')}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Completed */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{getStatusIcon('COMPLETED')}</span>
+                      <span className="font-medium text-gray-700">Completed</span>
+                    </div>
+                    <span className="font-bold text-gray-900">{statusBreakdown.COMPLETED || 0}</span>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-600 rounded-full transition-all"
+                      style={{ width: `${getStatusProgress('COMPLETED')}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Orders */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-900">Recent Orders</h3>
+                <button className="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-1 transition-colors">
+                  View all
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+
+              {orders.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <Package size={48} className="mx-auto mb-3 opacity-30" />
+                  <p>No orders yet</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {orders.map((order) => (
+                    <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all">
+                      <div>
+                        <p className="font-bold text-gray-900 mb-1">WW-2026-{String(order.id).slice(0, 3)}</p>
+                        <p className="text-sm text-gray-600">
+                          {order.user?.fullName} • {order.service?.name}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.status)}`}>
+                          {order.status.charAt(0) + order.status.slice(1).toLowerCase()}
+                        </span>
+                        <span className="font-bold text-gray-900">${order.totalPrice}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

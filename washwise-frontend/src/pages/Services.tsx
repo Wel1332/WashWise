@@ -100,7 +100,7 @@ export default function Services() {
                 <div className="flex justify-between items-center mb-6 pb-6 border-b border-gray-200">
                   <div className="flex items-center gap-2">
                     <DollarSign size={20} className="text-green-600" />
-                    <span className="text-2xl font-bold text-gray-900">${service.price}</span>
+                    <span className="text-2xl font-bold text-gray-900">{service.price}</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
                     <Clock size={18} />
