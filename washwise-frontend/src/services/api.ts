@@ -59,8 +59,14 @@ export const authAPI = {
   login: (email: string, password: string) =>
     api.post('/auth/login', { email, password }),
   
-  register: (email: string, password: string, fullName: string) =>
-    api.post('/auth/register', { email, password, fullName }),
+  register: (email: string, password: string, fullName: string, confirmPassword: string) => {
+    return api.post('/auth/register', {
+      email,
+      password,
+      fullName,
+      confirmPassword  // ADD THIS FIELD
+    });
+  },
 };
 
 // Profile API

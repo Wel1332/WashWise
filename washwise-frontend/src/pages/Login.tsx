@@ -115,17 +115,6 @@ export default function Login() {
               Create one now
             </Link>
           </p>
-
-          <div className="mt-8 pt-8 border-t border-gray-200">
-            <p className="text-gray-900 font-semibold text-sm mb-3">Demo Credentials:</p>
-            <div className="bg-gray-50 p-4 rounded-lg space-y-2 text-sm text-gray-700">
-              <p><strong>Customer:</strong> customer@example.com</p>
-              <p><strong>Password:</strong> Password123</p>
-              <hr className="my-2 border-gray-300" />
-              <p><strong>Admin:</strong> admin@washwise.com</p>
-              <p><strong>Password:</strong> AdminPass123</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

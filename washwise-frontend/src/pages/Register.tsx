@@ -34,7 +34,7 @@ export default function Register() {
     }
 
     try {
-      const { data } = await authAPI.register(email, password, fullName);
+      const { data } = await authAPI.register(email, password, fullName, confirmPassword);
       const { id, email: userEmail, fullName: name, role, accessToken, refreshToken } = data.data;
       login({ id, email: userEmail, fullName: name, role }, accessToken, refreshToken);
       navigate('/dashboard');
@@ -42,8 +42,7 @@ export default function Register() {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
-    }
-  };
+    }  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
