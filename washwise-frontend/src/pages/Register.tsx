@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Mail, Lock, AlertCircle, UserPlus, Loader, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Lock, AlertCircle, Loader, Eye, EyeOff, ChevronLeft, Droplets } from 'lucide-react';
 import { authAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 
@@ -11,6 +11,7 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -27,8 +28,14 @@ export default function Register() {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
+      setLoading(false);
+      return;
+    }
+
+    if (!agreeToTerms) {
+      setError('You must agree to the Terms of Service and Privacy Policy');
       setLoading(false);
       return;
     }
@@ -42,132 +49,174 @@ export default function Register() {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
-    }  };
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-      <div className="max-w-md w-full">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-          <div className="flex items-center justify-center mb-8">
-            <div className="bg-green-100 p-3 rounded-lg mr-3">
-              <UserPlus className="text-green-600" size={32} />
+      <div className="w-full max-w-md">
+        {/* Back to Homepage Link */}
+        <Link 
+          to="/" 
+          className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-8 text-sm font-medium transition-colors"
+        >
+          <ChevronLeft size={16} className="mr-1" />
+          Back to Homepage
+        </Link>
+
+        {/* Register Card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+          {/* Logo and Title */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="bg-blue-600 p-3 rounded-2xl mb-4">
+              <Droplets className="text-white" size={32} strokeWidth={2.5} />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Register</h2>
+            <h1 className="text-2xl font-bold text-gray-900">WashWise</h1>
+          </div>
+
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
+            <p className="text-gray-500 text-sm">Start your journey with professional laundry service</p>
           </div>
           
+          {/* Error Message */}
           {error && (
-            <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6 flex items-center gap-3 border border-red-200">
-              <AlertCircle size={20} />
-              <span className="text-sm font-medium">{error}</span>
+            <div className="bg-red-50 text-red-700 p-4 rounded-xl mb-6 flex items-start gap-3 border border-red-200">
+              <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />
+              <span className="text-sm">{error}</span>
             </div>
           )}
           
-          <form onSubmit={handleSubmit}>
-            <div className="mb-6">
-              <label className="block text-gray-900 mb-2 font-semibold flex items-center gap-2">
-                <User size={18} className="text-blue-600" /> Full Name
+          {/* Register Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Full Name Field */}
+            <div>
+              <label className="block text-gray-900 mb-2 font-medium text-sm flex items-center gap-2">
+                <User size={16} className="text-blue-600" />
+                Full Name
               </label>
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-900"
-                placeholder="John Doe"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-900 placeholder-gray-400 transition-all"
+                placeholder="Enter your full name"
                 required
               />
             </div>
-            
-            <div className="mb-6">
-              <label className="block text-gray-900 mb-2 font-semibold flex items-center gap-2">
-                <Mail size={18} className="text-blue-600" /> Email Address
+
+            {/* Email Field */}
+            <div>
+              <label className="block text-gray-900 mb-2 font-medium text-sm flex items-center gap-2">
+                <Mail size={16} className="text-blue-600" />
+                Email Address
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-900"
-                placeholder="you@example.com"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-900 placeholder-gray-400 transition-all"
+                placeholder="Enter your email"
                 required
               />
             </div>
             
-            <div className="mb-6">
-              <label className="block text-gray-900 mb-2 font-semibold flex items-center gap-2">
-                <Lock size={18} className="text-blue-600" /> Password
+            {/* Password Field */}
+            <div>
+              <label className="block text-gray-900 mb-2 font-medium text-sm flex items-center gap-2">
+                <Lock size={16} className="text-blue-600" />
+                Password
               </label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-900 pr-12"
-                  placeholder="••••••••"
+                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-900 placeholder-gray-400 transition-all"
+                  placeholder="Create a password"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  {showPassword ? (
-                    <EyeOff size={20} />
-                  ) : (
-                    <Eye size={20} />
-                  )}
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
             </div>
             
-            <div className="mb-8">
-              <label className="block text-gray-900 mb-2 font-semibold flex items-center gap-2">
-                <Lock size={18} className="text-blue-600" /> Confirm Password
+            {/* Confirm Password Field */}
+            <div>
+              <label className="block text-gray-900 mb-2 font-medium text-sm flex items-center gap-2">
+                <Lock size={16} className="text-blue-600" />
+                Confirm Password
               </label>
               <div className="relative">
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-900 pr-12"
-                  placeholder="••••••••"
+                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-900 placeholder-gray-400 transition-all"
+                  placeholder="Confirm your password"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff size={20} />
-                  ) : (
-                    <Eye size={20} />
-                  )}
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
             </div>
+
+            {/* Terms & Privacy */}
+            <div className="flex items-start">
+              <input
+                type="checkbox"
+                checked={agreeToTerms}
+                onChange={(e) => setAgreeToTerms(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-600 cursor-pointer mt-1"
+                required
+              />
+              <label className="ml-3 text-sm text-gray-600">
+                I agree to the
+                <Link to="/terms" className="text-blue-600 hover:text-blue-700 font-medium mx-1">
+                  Terms of Service
+                </Link>
+                and
+                <Link to="/privacy" className="text-blue-600 hover:text-blue-700 font-medium ml-1">
+                  Privacy Policy
+                </Link>
+              </label>
+            </div>
             
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold disabled:opacity-50 flex items-center justify-center gap-2 transition"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow-md"
             >
               {loading ? (
                 <>
-                  <Loader size={18} className="animate-spin" />
+                  <Loader size={20} className="animate-spin" />
                   Creating account...
                 </>
               ) : (
-                <>
-                  <UserPlus size={18} />
-                  Create Account
-                </>
+                'Create Account'
               )}
             </button>
           </form>
           
-          <p className="text-center mt-6 text-gray-600">
-            Already have an account?{' '}
-            <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold">
-              Sign in here
+          {/* Sign In Link */}
+          <p className="text-center mt-6 text-sm text-gray-600">
+            Already have an account?
+            <Link 
+              to="/login" 
+              className="text-blue-600 hover:text-blue-700 font-semibold ml-1 transition-colors"
+            >
+              Sign In
             </Link>
           </p>
         </div>

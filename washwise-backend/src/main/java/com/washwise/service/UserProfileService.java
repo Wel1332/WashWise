@@ -27,7 +27,6 @@ public class UserProfileService {
     private ImageService imageService;
 
     public UserProfileResponse getUserProfile(String userId) {
-        // Convert userId String to UUID
         UUID userUUID = UUID.fromString(userId);
         
         User user = userRepository.findById(userUUID)
@@ -35,12 +34,14 @@ public class UserProfileService {
 
         UserProfile profile = userProfileRepository.findByUserId(userUUID)
                 .orElseGet(() -> {
-                    UserProfile newProfile = new UserProfile(user);
+                    UserProfile newProfile = UserProfile.builder()
+                            .user(user)
+                            .build();
                     return userProfileRepository.save(newProfile);
                 });
 
         return new UserProfileResponse(
-                profile.getId(),
+                profile.getId().toString(),
                 user.getId().toString(),
                 user.getFullName(),
                 user.getEmail(),
@@ -57,14 +58,18 @@ public class UserProfileService {
     }
 
     public UserProfileResponse updateUserProfile(String userId, UserProfileRequest request) {
-        // Convert userId String to UUID
         UUID userUUID = UUID.fromString(userId);
         
         User user = userRepository.findById(userUUID)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         UserProfile profile = userProfileRepository.findByUserId(userUUID)
-                .orElseGet(() -> new UserProfile(user));
+                .orElseGet(() -> {
+                    UserProfile newProfile = UserProfile.builder()
+                            .user(user)
+                            .build();
+                    return userProfileRepository.save(newProfile);
+                });
 
         profile.setBio(request.getBio());
         profile.setPhoneNumber(request.getPhoneNumber());
@@ -76,7 +81,7 @@ public class UserProfileService {
         UserProfile updatedProfile = userProfileRepository.save(profile);
 
         return new UserProfileResponse(
-                updatedProfile.getId(),
+                updatedProfile.getId().toString(),
                 user.getId().toString(),
                 user.getFullName(),
                 user.getEmail(),
@@ -93,14 +98,18 @@ public class UserProfileService {
     }
 
     public UserProfileResponse uploadProfileImage(String userId, MultipartFile file) throws IOException {
-        // Convert userId String to UUID
         UUID userUUID = UUID.fromString(userId);
         
         User user = userRepository.findById(userUUID)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         UserProfile profile = userProfileRepository.findByUserId(userUUID)
-                .orElseGet(() -> new UserProfile(user));
+                .orElseGet(() -> {
+                    UserProfile newProfile = UserProfile.builder()
+                            .user(user)
+                            .build();
+                    return userProfileRepository.save(newProfile);
+                });
 
         // Delete old image if exists
         if (profile.getProfileImageUrl() != null) {
@@ -115,7 +124,7 @@ public class UserProfileService {
         UserProfile updatedProfile = userProfileRepository.save(profile);
 
         return new UserProfileResponse(
-                updatedProfile.getId(),
+                updatedProfile.getId().toString(),
                 user.getId().toString(),
                 user.getFullName(),
                 user.getEmail(),

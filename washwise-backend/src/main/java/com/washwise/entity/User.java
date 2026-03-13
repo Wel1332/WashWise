@@ -8,6 +8,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -76,6 +78,53 @@ public class User {
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    // ============================================
+    // RELATIONSHIPS - CASCADE DELETE
+    // ============================================
+
+    /**
+     * Refresh tokens associated with this user
+     * When user is deleted, all refresh tokens are automatically deleted
+     */
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<RefreshToken> refreshTokens = new ArrayList<>();
+
+    /**
+     * Orders created by this user
+     * When user is deleted, all orders are automatically deleted
+     */
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<Order> orders = new ArrayList<>();
+
+    /**
+     * Reviews written by this user
+     * When user is deleted, all reviews are automatically deleted
+     */
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<Review> reviews = new ArrayList<>();
+
+    /**
+     * User profile information
+     * When user is deleted, profile is automatically deleted
+     */
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private UserProfile userProfile;
+
+    // ============================================
+    // CONVENIENCE METHODS
+    // ============================================
 
     /**
      * Check if user has a specific role

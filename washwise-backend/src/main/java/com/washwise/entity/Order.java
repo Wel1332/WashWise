@@ -26,10 +26,14 @@ public class Order {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "service_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private ServiceEntity service;
 
     @Column(nullable = false, length = 50)

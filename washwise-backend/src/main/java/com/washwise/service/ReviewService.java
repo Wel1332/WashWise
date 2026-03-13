@@ -28,23 +28,25 @@ public class ReviewService {
     private UserRepository userRepository;
 
     public ReviewResponse createReview(ReviewRequest request, String userId) {
-        // FIXED: Converted userId String to UUID for the repository
         UUID userUuid = UUID.fromString(userId);
         User user = userRepository.findById(userUuid)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
-        // Convert serviceId String to UUID
         UUID serviceId = UUID.fromString(request.getServiceId());
-        
-        // Now serviceRepository.findById expects UUID
         ServiceEntity service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new RuntimeException("Service not found"));
 
-        Review review = new Review(user, service, request.getRating(), request.getComment());
+        Review review = Review.builder()
+                .user(user)
+                .service(service)
+                .rating(request.getRating())
+                .comment(request.getComment())
+                .build();
+
         Review savedReview = reviewRepository.save(review);
 
         return new ReviewResponse(
-                savedReview.getId(),
+                savedReview.getId().toString(),  
                 savedReview.getUser().getFullName(),
                 savedReview.getRating(),
                 savedReview.getComment(),
@@ -58,7 +60,7 @@ public class ReviewService {
         return reviewRepository.findByServiceId(serviceUUID)
                 .stream()
                 .map(review -> new ReviewResponse(
-                        review.getId(),
+                        review.getId().toString(),  // ✅ UUID to String
                         review.getUser().getFullName(),
                         review.getRating(),
                         review.getComment(),
