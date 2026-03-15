@@ -9,10 +9,8 @@ import {
   Droplets,
   TrendingUp,
   CheckCircle2,
-  DollarSign,
   Plus,
-  Clock,
-  PackageCheck
+  Clock
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { ordersAPI } from '../services/api';
@@ -20,7 +18,6 @@ import { ordersAPI } from '../services/api';
 export default function CustomerDashboard() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('dashboard');
   const [stats, setStats] = useState({
     totalOrders: 0,
     completed: 0,
@@ -41,7 +38,6 @@ export default function CustomerDashboard() {
       
       setOrders(myOrders);
       
-      // Calculate stats
       setStats({
         totalOrders: myOrders.length,
         completed: myOrders.filter((o: any) => o.status === 'COMPLETED').length,
@@ -108,48 +104,33 @@ export default function CustomerDashboard() {
           </p>
           <div className="space-y-1">
             <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
-                activeTab === 'dashboard'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
+              onClick={() => navigate('/dashboard')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium bg-blue-600 text-white transition-all"
             >
               <LayoutDashboard size={20} />
               <span>Dashboard</span>
             </button>
 
             <button
-              onClick={() => setActiveTab('book-service')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
-                activeTab === 'book-service'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
+              onClick={() => navigate('/book-service')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-700 hover:bg-gray-100 transition-all"
             >
               <ShoppingCart size={20} />
               <span>Book Service</span>
             </button>
 
             <button
-              onClick={() => setActiveTab('my-orders')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
-                activeTab === 'my-orders'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
+              onClick={() => navigate('/my-orders')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-700 hover:bg-gray-100 transition-all"
             >
               <Package size={20} />
               <span>My Orders</span>
             </button>
 
+            {/* ✅ FIXED: Navigate to /profile */}
             <button
-              onClick={() => setActiveTab('profile')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
-                activeTab === 'profile'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
+              onClick={() => navigate('/profile')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-700 hover:bg-gray-100 transition-all"
             >
               <UserCircle size={20} />
               <span>Profile</span>
@@ -348,15 +329,16 @@ export default function CustomerDashboard() {
               </button>
               
               <button
-                onClick={() => setActiveTab('my-orders')}
+                onClick={() => navigate('/my-orders')}
                 className="bg-white hover:bg-gray-50 text-gray-900 p-6 rounded-2xl font-semibold transition-all flex items-center justify-center gap-3 border-2 border-gray-200"
               >
                 <Package size={24} />
                 View All Orders
               </button>
               
+              {/* ✅ FIXED: Navigate to /profile */}
               <button
-                onClick={() => setActiveTab('profile')}
+                onClick={() => navigate('/profile')}
                 className="bg-white hover:bg-gray-50 text-gray-900 p-6 rounded-2xl font-semibold transition-all flex items-center justify-center gap-3 border-2 border-gray-200"
               >
                 <UserCircle size={24} />

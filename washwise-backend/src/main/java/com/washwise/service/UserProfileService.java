@@ -26,13 +26,13 @@ public class UserProfileService {
     @Autowired
     private ImageService imageService;
 
-    public UserProfileResponse getUserProfile(String userId) {
-        UUID userUUID = UUID.fromString(userId);
-        
-        User user = userRepository.findById(userUUID)
+    // ✅ Changed parameter from String to UUID
+    public UserProfileResponse getUserProfile(UUID userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        UserProfile profile = userProfileRepository.findByUserId(userUUID)
+        // ✅ Changed to findByUser instead of findByUserId
+        UserProfile profile = userProfileRepository.findByUser(user)
                 .orElseGet(() -> {
                     UserProfile newProfile = UserProfile.builder()
                             .user(user)
@@ -57,13 +57,13 @@ public class UserProfileService {
         );
     }
 
-    public UserProfileResponse updateUserProfile(String userId, UserProfileRequest request) {
-        UUID userUUID = UUID.fromString(userId);
-        
-        User user = userRepository.findById(userUUID)
+    // ✅ Changed parameter from String to UUID
+    public UserProfileResponse updateUserProfile(UUID userId, UserProfileRequest request) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        UserProfile profile = userProfileRepository.findByUserId(userUUID)
+        // ✅ Changed to findByUser instead of findByUserId
+        UserProfile profile = userProfileRepository.findByUser(user)
                 .orElseGet(() -> {
                     UserProfile newProfile = UserProfile.builder()
                             .user(user)
@@ -71,11 +71,23 @@ public class UserProfileService {
                     return userProfileRepository.save(newProfile);
                 });
 
-        profile.setBio(request.getBio());
-        profile.setPhoneNumber(request.getPhoneNumber());
-        profile.setAddress(request.getAddress());
-        profile.setCity(request.getCity());
-        profile.setZipCode(request.getZipCode());
+        // ✅ Only update if values are not null
+        if (request.getBio() != null) {
+            profile.setBio(request.getBio());
+        }
+        if (request.getPhoneNumber() != null) {
+            profile.setPhoneNumber(request.getPhoneNumber());
+        }
+        if (request.getAddress() != null) {
+            profile.setAddress(request.getAddress());
+        }
+        if (request.getCity() != null) {
+            profile.setCity(request.getCity());
+        }
+        if (request.getZipCode() != null) {
+            profile.setZipCode(request.getZipCode());
+        }
+        
         profile.setUpdatedAt(LocalDateTime.now());
 
         UserProfile updatedProfile = userProfileRepository.save(profile);
@@ -97,13 +109,13 @@ public class UserProfileService {
         );
     }
 
-    public UserProfileResponse uploadProfileImage(String userId, MultipartFile file) throws IOException {
-        UUID userUUID = UUID.fromString(userId);
-        
-        User user = userRepository.findById(userUUID)
+    // ✅ Changed parameter from String to UUID
+    public UserProfileResponse uploadProfileImage(UUID userId, MultipartFile file) throws IOException {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        UserProfile profile = userProfileRepository.findByUserId(userUUID)
+        // ✅ Changed to findByUser instead of findByUserId
+        UserProfile profile = userProfileRepository.findByUser(user)
                 .orElseGet(() -> {
                     UserProfile newProfile = UserProfile.builder()
                             .user(user)

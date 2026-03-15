@@ -2,8 +2,11 @@ package com.washwise.controller;
 
 import com.washwise.dto.request.UserProfileRequest;
 import com.washwise.dto.response.UserProfileResponse;
+import com.washwise.entity.User;
+import com.washwise.repository.UserRepository;
 import com.washwise.service.UserProfileService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,31 +15,58 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/profile")
+@RequiredArgsConstructor
 public class UserProfileController {
 
-    @Autowired
-    private UserProfileService userProfileService;
+    private final UserProfileService userProfileService;
+    private final UserRepository userRepository;
 
     @GetMapping
     public ResponseEntity<?> getProfile() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String userId = auth.getName();
-
-            UserProfileResponse profile = userProfileService.getUserProfile(userId);
+            String email = auth.getName();
+            
+            // Get user by email to retrieve UUID
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            UserProfileResponse profile = userProfileService.getUserProfile(user.getId());
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
+            response.put("message", "Profile retrieved successfully");
             response.put("data", profile);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
             error.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<?> getPublicProfile(@PathVariable String userId) {
+        try {
+            UserProfileResponse profile = userProfileService.getUserProfile(UUID.fromString(userId));
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Profile retrieved successfully");
+            response.put("data", profile);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
     }
 
@@ -44,19 +74,25 @@ public class UserProfileController {
     public ResponseEntity<?> updateProfile(@RequestBody UserProfileRequest request) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String userId = auth.getName();
+            String email = auth.getName();
+            
+            // Get user by email to retrieve UUID
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-            UserProfileResponse profile = userProfileService.updateUserProfile(userId, request);
+            UserProfileResponse profile = userProfileService.updateUserProfile(user.getId(), request);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
+            response.put("message", "Profile updated successfully");
             response.put("data", profile);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
             error.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
     }
 
@@ -64,36 +100,25 @@ public class UserProfileController {
     public ResponseEntity<?> uploadProfileImage(@RequestParam("file") MultipartFile file) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String userId = auth.getName();
+            String email = auth.getName();
+            
+            // Get user by email to retrieve UUID
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-            UserProfileResponse profile = userProfileService.uploadProfileImage(userId, file);
+            UserProfileResponse profile = userProfileService.uploadProfileImage(user.getId(), file);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
+            response.put("message", "Profile image uploaded successfully");
             response.put("data", profile);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
             error.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
-    }
-
-    @GetMapping("/{userId}")
-    public ResponseEntity<?> getPublicProfile(@PathVariable String userId) {
-        try {
-            UserProfileResponse profile = userProfileService.getUserProfile(userId);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", profile);
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
     }
 }
