@@ -1,343 +1,369 @@
-import { Link } from 'react-router-dom';
-import { Droplets, Package, Clock, CheckCircle, TrendingUp, Shield, Award, Users, Zap, Leaf, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  ShoppingCart, 
+  Package, 
+  UserCircle,
+  LogOut,
+  Droplets,
+  TrendingUp,
+  CheckCircle2,
+  DollarSign,
+  Plus,
+  Clock,
+  PackageCheck
+} from 'lucide-react';
+import { useAuthStore } from '../store/authStore';
+import { ordersAPI } from '../services/api';
 
-export default function Home() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+export default function CustomerDashboard() {
+  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [stats, setStats] = useState({
+    totalOrders: 0,
+    completed: 0,
+    totalSpent: 0
+  });
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCustomerData();
+  }, []);
+
+  const fetchCustomerData = async () => {
+    try {
+      setLoading(true);
+      const { data } = await ordersAPI.getMyOrders();
+      const myOrders = data.data || [];
+      
+      setOrders(myOrders);
+      
+      // Calculate stats
+      setStats({
+        totalOrders: myOrders.length,
+        completed: myOrders.filter((o: any) => o.status === 'COMPLETED').length,
+        totalSpent: myOrders.reduce((sum: number, o: any) => sum + (o.totalPrice || 0), 0)
+      });
+    } catch (error) {
+      console.error('Failed to fetch customer data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const handleBookService = () => {
+    navigate('/book-service');
+  };
+
+  const getStatusColor = (status: string) => {
+    const colors: any = {
+      PENDING: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+      RECEIVED: 'bg-blue-100 text-blue-700 border-blue-200',
+      WASHING: 'bg-purple-100 text-purple-700 border-purple-200',
+      DRYING: 'bg-orange-100 text-orange-700 border-orange-200',
+      READY: 'bg-green-100 text-green-700 border-green-200',
+      COMPLETED: 'bg-gray-100 text-gray-700 border-gray-200'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-700 border-gray-200';
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left Content */}
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        {/* Logo */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="bg-blue-600 p-2 rounded-xl">
+              <Droplets className="text-white" size={24} />
+            </div>
             <div>
-              <div className="inline-flex items-center gap-2 bg-blue-500/30 px-4 py-2 rounded-full mb-6">
-                <Zap size={16} className="text-blue-200" />
-                <span className="text-sm font-medium text-blue-100">Fast & Reliable Service</span>
-              </div>
+              <h1 className="text-xl font-bold text-gray-900">WashWise</h1>
+              <p className="text-xs text-gray-500">Customer Portal</p>
+            </div>
+          </div>
+        </div>
 
-              <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                Professional Laundry Service at Your Doorstep
-              </h1>
+        {/* Navigation */}
+        <nav className="flex-1 p-4">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            MENU
+          </p>
+          <div className="space-y-1">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
+                activeTab === 'dashboard'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <LayoutDashboard size={20} />
+              <span>Dashboard</span>
+            </button>
 
-              <p className="text-lg text-blue-100 mb-8 leading-relaxed">
-                Book, track, and manage your laundry services with ease. Save time and let us handle your clothes with care.
-              </p>
+            <button
+              onClick={() => setActiveTab('book-service')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
+                activeTab === 'book-service'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <ShoppingCart size={20} />
+              <span>Book Service</span>
+            </button>
 
-              <div className="flex flex-wrap gap-4 mb-12">
-                <Link 
-                  to="/register" 
-                  className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
-                >
-                  <Package size={20} />
-                  Book Laundry Now
-                </Link>
-                <a 
-                  href="#services" 
-                  className="bg-blue-700 hover:bg-blue-600 text-white px-8 py-4 rounded-xl font-semibold transition-all border-2 border-blue-500"
-                >
-                  Learn More
-                </a>
-              </div>
+            <button
+              onClick={() => setActiveTab('my-orders')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
+                activeTab === 'my-orders'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <Package size={20} />
+              <span>My Orders</span>
+            </button>
 
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-8">
-                <div>
-                  <div className="text-3xl font-bold mb-1">10K+</div>
-                  <div className="text-blue-200 text-sm">Happy Customers</div>
+            {/* ✅ UPDATED: Navigate to /profile instead of setting activeTab */}
+            <button
+              onClick={() => navigate('/profile')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-700 hover:bg-gray-100 transition-all"
+            >
+              <UserCircle size={20} />
+              <span>Profile</span>
+            </button>
+          </div>
+        </nav>
+
+        {/* User Profile */}
+        <div className="p-4 border-t border-gray-200">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+              <UserCircle className="text-white" size={24} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-gray-900 text-sm truncate">{user?.fullName || 'Customer'}</p>
+              <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg font-medium transition-all"
+          >
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto">
+        <div className="p-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
+            <p className="text-gray-600">Welcome back, {user?.fullName?.split(' ')[0]}! 👋</p>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {/* Total Orders */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
+              <div className="flex items-start justify-between mb-4">
+                <div className="bg-blue-100 p-3 rounded-xl">
+                  <Package className="text-blue-600" size={24} />
                 </div>
-                <div>
-                  <div className="text-3xl font-bold mb-1">99%</div>
-                  <div className="text-blue-200 text-sm">Satisfaction Rate</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold mb-1">24h</div>
-                  <div className="text-blue-200 text-sm">Fast Turnaround</div>
-                </div>
+                <span className="text-xs font-medium text-gray-500 uppercase">Total Orders</span>
               </div>
+              <div className="text-4xl font-bold text-gray-900 mb-1">{stats.totalOrders}</div>
+              <p className="text-sm text-gray-600">All time</p>
             </div>
 
-            {/* Right Image */}
-            <div className="relative">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                <img 
-                  src="https://images.unsplash.com/photo-1517677208171-0bc6725a3e60?w=800&h=600&fit=crop" 
-                  alt="Laundry Service" 
-                  className="w-full h-auto"
-                />
-                <div className="absolute bottom-6 left-6 bg-white px-6 py-4 rounded-xl shadow-lg flex items-center gap-3">
-                  <CheckCircle className="text-green-600" size={24} />
-                  <div>
-                    <div className="font-bold text-gray-900">10K+</div>
-                    <div className="text-sm text-gray-600">Orders Completed</div>
+            {/* Completed */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
+              <div className="flex items-start justify-between mb-4">
+                <div className="bg-green-100 p-3 rounded-xl">
+                  <TrendingUp className="text-green-600" size={24} />
+                </div>
+                <span className="text-xs font-medium text-gray-500 uppercase">Completed</span>
+              </div>
+              <div className="text-4xl font-bold text-gray-900 mb-1">{stats.completed}</div>
+              <p className="text-sm text-green-600 font-medium">Successfully delivered</p>
+            </div>
+
+            {/* Total Spent */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
+              <div className="flex items-start justify-between mb-4">
+                <div className="bg-purple-100 p-3 rounded-xl">
+                  <Droplets className="text-purple-600" size={24} />
+                </div>
+                <span className="text-xs font-medium text-gray-500 uppercase">Total Spent</span>
+              </div>
+              <div className="text-4xl font-bold text-gray-900 mb-1">${stats.totalSpent.toFixed(2)}</div>
+              <p className="text-sm text-gray-600">Lifetime value</p>
+            </div>
+          </div>
+
+          {/* Two Column Layout */}
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Active Orders / CTA */}
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+              {orders.filter(o => o.status !== 'COMPLETED').length === 0 ? (
+                // No Active Orders - Show CTA
+                <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-8 text-white relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full opacity-20 -mr-32 -mt-32"></div>
+                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-400 rounded-full opacity-20 -ml-24 -mb-24"></div>
+                  
+                  <div className="relative z-10">
+                    <div className="bg-white/20 backdrop-blur-sm w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
+                      <Plus className="text-white" size={32} />
+                    </div>
+                    
+                    <h3 className="text-3xl font-bold mb-3">Need Laundry Service?</h3>
+                    <p className="text-blue-100 mb-6 text-lg">
+                      Quick and easy booking in just a few clicks
+                    </p>
+                    
+                    <button
+                      onClick={handleBookService}
+                      className="bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 shadow-lg hover:shadow-xl"
+                    >
+                      <ShoppingCart size={20} />
+                      Book New Service
+                    </button>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Services Section */}
-      <section id="services" className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Services</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Choose from our range of professional laundry services with transparent pricing
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Wash & Fold */}
-            <div className="bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-lg transition-all group">
-              <div className="bg-blue-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition-colors">
-                <Droplets className="text-blue-600 group-hover:text-white transition-colors" size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Wash & Fold</h3>
-              <p className="text-gray-600 text-sm mb-4">Professional washing and folding service</p>
-              <div className="text-3xl font-bold text-blue-600 mb-4">$12<span className="text-lg text-gray-500">/kg</span></div>
-              <Link to="/register" className="text-blue-600 font-semibold text-sm hover:text-blue-700 transition-colors inline-flex items-center gap-1">
-                Book now →
-              </Link>
-            </div>
-
-            {/* Dry Clean */}
-            <div className="bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-lg transition-all group">
-              <div className="bg-purple-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-purple-600 transition-colors">
-                <Clock className="text-purple-600 group-hover:text-white transition-colors" size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Dry Clean</h3>
-              <p className="text-gray-600 text-sm mb-4">Specialized dry cleaning for delicate items</p>
-              <div className="text-3xl font-bold text-purple-600 mb-4">$8<span className="text-lg text-gray-500">/kg</span></div>
-              <Link to="/register" className="text-purple-600 font-semibold text-sm hover:text-purple-700 transition-colors inline-flex items-center gap-1">
-                Book now →
-              </Link>
-            </div>
-
-            {/* Iron & Press */}
-            <div className="bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-lg transition-all group">
-              <div className="bg-green-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-green-600 transition-colors">
-                <CheckCircle className="text-green-600 group-hover:text-white transition-colors" size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Iron & Press</h3>
-              <p className="text-gray-600 text-sm mb-4">Expert ironing and pressing service</p>
-              <div className="text-3xl font-bold text-green-600 mb-4">$10<span className="text-lg text-gray-500">/kg</span></div>
-              <Link to="/register" className="text-green-600 font-semibold text-sm hover:text-green-700 transition-colors inline-flex items-center gap-1">
-                Book now →
-              </Link>
-            </div>
-
-            {/* Pickup & Delivery */}
-            <div className="bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-lg transition-all group">
-              <div className="bg-orange-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-orange-600 transition-colors">
-                <TrendingUp className="text-orange-600 group-hover:text-white transition-colors" size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Pickup & Delivery</h3>
-              <p className="text-gray-600 text-sm mb-4">Complete service with free delivery</p>
-              <div className="text-3xl font-bold text-orange-600 mb-4">$15<span className="text-lg text-gray-500">/kg</span></div>
-              <Link to="/register" className="text-orange-600 font-semibold text-sm hover:text-orange-700 transition-colors inline-flex items-center gap-1">
-                Book now →
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Simple steps to get your laundry done professionally
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Step 1 */}
-            <div className="text-center relative">
-              <div className="bg-blue-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Package className="text-blue-600" size={32} />
-              </div>
-              <div className="absolute top-8 left-1/2 w-full h-0.5 bg-gray-200 hidden md:block" style={{width: 'calc(100% - 4rem)'}}></div>
-              <div className="bg-white rounded-full w-8 h-8 flex items-center justify-center mx-auto mb-4 text-sm font-bold text-gray-400 border-2 border-gray-200">
-                1
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Book Service</h3>
-              <p className="text-gray-600">Select your service type and schedule a convenient pickup time</p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="text-center relative">
-              <div className="bg-blue-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Droplets className="text-blue-600" size={32} />
-              </div>
-              <div className="absolute top-8 left-1/2 w-full h-0.5 bg-gray-200 hidden md:block" style={{width: 'calc(100% - 4rem)'}}></div>
-              <div className="bg-white rounded-full w-8 h-8 flex items-center justify-center mx-auto mb-4 text-sm font-bold text-gray-400 border-2 border-gray-200">
-                2
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">We Process</h3>
-              <p className="text-gray-600">Our expert team collects and processes your laundry with care</p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="text-center">
-              <div className="bg-blue-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <TrendingUp className="text-blue-600" size={32} />
-              </div>
-              <div className="bg-white rounded-full w-8 h-8 flex items-center justify-center mx-auto mb-4 text-sm font-bold text-gray-400 border-2 border-gray-200">
-                3
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Delivery</h3>
-              <p className="text-gray-600">Clean, fresh clothes delivered right back to your doorstep</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose WashWise */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose WashWise</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Premium features for a premium service
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <div className="bg-white p-8 rounded-2xl border border-gray-200">
-              <div className="bg-blue-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6">
-                <Clock className="text-blue-600" size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Real-Time Tracking</h3>
-              <p className="text-gray-600">Monitor your order status in real-time from pickup to delivery</p>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="bg-white p-8 rounded-2xl border border-gray-200">
-              <div className="bg-yellow-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6">
-                <Award className="text-yellow-600" size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Quality Guarantee</h3>
-              <p className="text-gray-600">Professional care with 100% satisfaction guarantee</p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="bg-white p-8 rounded-2xl border border-gray-200">
-              <div className="bg-green-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6">
-                <Zap className="text-green-600" size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Fast Turnaround</h3>
-              <p className="text-gray-600">Quick processing with same-day or next-day delivery options</p>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="bg-white p-8 rounded-2xl border border-gray-200">
-              <div className="bg-purple-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6">
-                <Shield className="text-purple-600" size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Secure Payment</h3>
-              <p className="text-gray-600">Safe and secure payment processing with multiple options</p>
-            </div>
-
-            {/* Feature 5 */}
-            <div className="bg-white p-8 rounded-2xl border border-gray-200">
-              <div className="bg-red-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6">
-                <Users className="text-red-600" size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Expert Staff</h3>
-              <p className="text-gray-600">Trained professionals handling your clothes with expertise</p>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="bg-white p-8 rounded-2xl border border-gray-200">
-              <div className="bg-teal-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6">
-                <Leaf className="text-teal-600" size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Eco-Friendly</h3>
-              <p className="text-gray-600">Environmentally conscious cleaning methods and products</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold mb-4">Ready to Experience Premium Laundry Service?</h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Join thousands of satisfied customers who trust WashWise
-          </p>
-          <Link 
-            to="/register" 
-            className="inline-block bg-white text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl"
-          >
-            Get Started Today →
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            {/* Company */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="bg-blue-600 p-2 rounded-xl">
-                  <Droplets className="text-white" size={20} />
+              ) : (
+                // Active Orders List
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-6">Active Orders</h3>
+                  <div className="space-y-4">
+                    {orders
+                      .filter(o => o.status !== 'COMPLETED')
+                      .slice(0, 3)
+                      .map((order) => (
+                        <div key={order.id} className="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all">
+                          <div className="flex items-center justify-between mb-3">
+                            <p className="font-bold text-gray-900">WW-2026-{String(order.id).slice(0, 3)}</p>
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(order.status)}`}>
+                              {order.status.charAt(0) + order.status.slice(1).toLowerCase()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">{order.service?.name}</p>
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs text-gray-500">{formatDate(order.createdAt)}</p>
+                            <p className="font-bold text-gray-900">${order.totalPrice}</p>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
                 </div>
-                <span className="text-lg font-bold">WashWise</span>
-              </div>
-              <p className="text-gray-400 text-sm">
-                Professional laundry platform making your life easier, one load at a time.
-              </p>
+              )}
             </div>
 
-            {/* Services */}
-            <div>
-              <h4 className="font-bold mb-4 text-sm uppercase tracking-wider text-gray-300">SERVICES</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">Wash & Fold</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Dry Clean</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Iron & Press</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Pickup & Delivery</a></li>
-              </ul>
-            </div>
-
-            {/* Company */}
-            <div>
-              <h4 className="font-bold mb-4 text-sm uppercase tracking-wider text-gray-300">COMPANY</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-              </ul>
-            </div>
-
-            {/* Contact */}
-            <div>
-              <h4 className="font-bold mb-4 text-sm uppercase tracking-wider text-gray-300">CONTACT</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li>support@washwise.com</li>
-                <li>+1 (555) 123-4567</li>
-                <li>123 Main Street</li>
-                <li>New York, NY 10001</li>
-              </ul>
+            {/* Recent Orders */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900 mb-6">Recent Orders</h3>
+              
+              {orders.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="bg-gray-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Package size={48} className="text-gray-400" />
+                  </div>
+                  <p className="text-gray-500 font-medium mb-1">No orders yet</p>
+                  <p className="text-sm text-gray-400 mb-6">Your order history will appear here</p>
+                  <button
+                    onClick={handleBookService}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all inline-flex items-center gap-2"
+                  >
+                    <Plus size={20} />
+                    Book Your First Service
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {orders.slice(0, 5).map((order) => (
+                    <div key={order.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all cursor-pointer">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                        order.status === 'COMPLETED' ? 'bg-green-100' : 'bg-blue-100'
+                      }`}>
+                        {order.status === 'COMPLETED' ? (
+                          <CheckCircle2 className="text-green-600" size={24} />
+                        ) : (
+                          <Clock className="text-blue-600" size={24} />
+                        )}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="font-bold text-gray-900 text-sm">WW-2026-{String(order.id).slice(0, 3)}</p>
+                          <p className="font-bold text-gray-900">${order.totalPrice}</p>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-1">{order.service?.name}</p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-gray-500">{formatDate(order.createdAt)}</p>
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.status)}`}>
+                            {order.status.charAt(0) + order.status.slice(1).toLowerCase()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="border-t border-gray-800 pt-8 text-center text-gray-400 text-sm">
-            © 2026 WashWise. All rights reserved. Built with care for your clothes.
-          </div>
+          {/* Quick Actions */}
+          {orders.length > 0 && (
+            <div className="mt-8 grid md:grid-cols-3 gap-4">
+              <button
+                onClick={handleBookService}
+                className="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-2xl font-semibold transition-all flex items-center justify-center gap-3 shadow-sm hover:shadow-lg"
+              >
+                <Plus size={24} />
+                Book New Service
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('my-orders')}
+                className="bg-white hover:bg-gray-50 text-gray-900 p-6 rounded-2xl font-semibold transition-all flex items-center justify-center gap-3 border-2 border-gray-200"
+              >
+                <Package size={24} />
+                View All Orders
+              </button>
+              
+              {/* ✅ UPDATED: Navigate to /profile */}
+              <button
+                onClick={() => navigate('/profile')}
+                className="bg-white hover:bg-gray-50 text-gray-900 p-6 rounded-2xl font-semibold transition-all flex items-center justify-center gap-3 border-2 border-gray-200"
+              >
+                <UserCircle size={24} />
+                My Profile
+              </button>
+            </div>
+          )}
         </div>
-      </footer>
+      </main>
     </div>
   );
 }

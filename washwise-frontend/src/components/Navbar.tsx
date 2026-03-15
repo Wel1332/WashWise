@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Droplets, Menu, X, LayoutDashboard, User, BarChart3, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
@@ -6,8 +6,15 @@ import { useAuthStore } from '../store/authStore';
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
-  // Helper to close menu when a link is clicked on mobile
+  const hiddenRoutes = ['/dashboard', '/login', '/register'];
+  const shouldHideNavbar = hiddenRoutes.some(route => location.pathname.startsWith(route));
+
+  if (shouldHideNavbar) {
+    return null;
+  }
+
   const closeMenu = () => setMobileMenuOpen(false);
 
   return (

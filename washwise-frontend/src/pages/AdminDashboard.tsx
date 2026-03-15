@@ -7,11 +7,15 @@ import {
   Users, 
   TrendingUp, 
   Clock, 
-  DollarSign, 
   UserCircle,
   LogOut,
   Droplets,
-  ChevronRight
+  ChevronRight,
+  PackageCheck,
+  Loader,
+  Wind,
+  CheckCircle2,
+  Circle
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { ordersAPI } from '../services/api';
@@ -79,16 +83,17 @@ export default function AdminDashboard() {
     return colors[status] || 'bg-gray-100 text-gray-700';
   };
 
+  // ✅ UPDATED: Using Lucide icons instead of emojis
   const getStatusIcon = (status: string) => {
     const icons: any = {
-      PENDING: '⏱️',
-      RECEIVED: '📦',
-      WASHING: '🔄',
-      DRYING: '☀️',
-      READY: '✅',
-      COMPLETED: '✓'
+      PENDING: <Clock size={20} className="text-yellow-600" />,
+      RECEIVED: <PackageCheck size={20} className="text-blue-600" />,
+      WASHING: <Loader size={20} className="text-purple-600" />,
+      DRYING: <Wind size={20} className="text-orange-600" />,
+      READY: <CheckCircle2 size={20} className="text-green-600" />,
+      COMPLETED: <Circle size={20} className="text-gray-600" />
     };
-    return icons[status] || '•';
+    return icons[status] || <Circle size={20} className="text-gray-600" />;
   };
 
   const getStatusProgress = (status: string) => {
@@ -264,7 +269,7 @@ export default function AdminDashboard() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{getStatusIcon('PENDING')}</span>
+                      {getStatusIcon('PENDING')}
                       <span className="font-medium text-gray-700">Pending</span>
                     </div>
                     <span className="font-bold text-gray-900">{statusBreakdown.PENDING || 0}</span>
@@ -281,7 +286,7 @@ export default function AdminDashboard() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{getStatusIcon('RECEIVED')}</span>
+                      {getStatusIcon('RECEIVED')}
                       <span className="font-medium text-gray-700">Received</span>
                     </div>
                     <span className="font-bold text-gray-900">{statusBreakdown.RECEIVED || 0}</span>
@@ -298,7 +303,7 @@ export default function AdminDashboard() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{getStatusIcon('WASHING')}</span>
+                      {getStatusIcon('WASHING')}
                       <span className="font-medium text-gray-700">Washing</span>
                     </div>
                     <span className="font-bold text-gray-900">{statusBreakdown.WASHING || 0}</span>
@@ -315,7 +320,7 @@ export default function AdminDashboard() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{getStatusIcon('DRYING')}</span>
+                      {getStatusIcon('DRYING')}
                       <span className="font-medium text-gray-700">Drying</span>
                     </div>
                     <span className="font-bold text-gray-900">{statusBreakdown.DRYING || 0}</span>
@@ -332,7 +337,7 @@ export default function AdminDashboard() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{getStatusIcon('READY')}</span>
+                      {getStatusIcon('READY')}
                       <span className="font-medium text-gray-700">Ready</span>
                     </div>
                     <span className="font-bold text-gray-900">{statusBreakdown.READY || 0}</span>
@@ -349,7 +354,7 @@ export default function AdminDashboard() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{getStatusIcon('COMPLETED')}</span>
+                      {getStatusIcon('COMPLETED')}
                       <span className="font-medium text-gray-700">Completed</span>
                     </div>
                     <span className="font-bold text-gray-900">{statusBreakdown.COMPLETED || 0}</span>
