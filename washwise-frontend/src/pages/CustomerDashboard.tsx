@@ -165,7 +165,7 @@ export default function CustomerDashboard() {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
-            <p className="text-gray-600">Welcome back, {user?.fullName?.split(' ')[0]}! 👋</p>
+            <p className="text-gray-600">Welcome back, {user?.fullName?.split(' ')[0]}!</p>
           </div>
 
           {/* Stats Cards */}
@@ -335,8 +335,7 @@ export default function CustomerDashboard() {
                 <Package size={24} />
                 View All Orders
               </button>
-              
-              {/* ✅ FIXED: Navigate to /profile */}
+            
               <button
                 onClick={() => navigate('/profile')}
                 className="bg-white hover:bg-gray-50 text-gray-900 p-6 rounded-2xl font-semibold transition-all flex items-center justify-center gap-3 border-2 border-gray-200"

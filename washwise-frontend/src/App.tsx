@@ -6,6 +6,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import StaffDashboard from './pages/StaffDashboard';
 import CustomerDashboard from './pages/CustomerDashboard';
 import UserProfile from './pages/UserProfile';
+import BookService from './pages/BookService';
+import MyOrders from './pages/MyOrders';
 
 function App() {
   return (
@@ -23,6 +25,8 @@ function App() {
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
         <Route path="/dashboard/staff" element={<StaffDashboard />} />
         <Route path="/dashboard/customer" element={<CustomerDashboard />} />
+        <Route path="/book-service" element={<BookService />} />
+        <Route path="/my-orders" element={<MyOrders />} /> 
 
         <Route path="/profile" element={<UserProfile />} />
       </Routes>
