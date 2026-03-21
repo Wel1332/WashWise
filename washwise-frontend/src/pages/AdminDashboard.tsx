@@ -1,15 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  LayoutDashboard, 
   Package, 
-  Settings, 
   Users, 
   TrendingUp, 
-  Clock, 
-  UserCircle,
-  LogOut,
-  Droplets,
+  Clock,
   ChevronRight,
   PackageCheck,
   Loader,
@@ -19,9 +14,10 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { ordersAPI } from '../services/api';
+import Sidebar from '../components/Sidebar';
 
 export default function AdminDashboard() {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState({
@@ -66,11 +62,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   const getStatusColor = (status: string) => {
     const colors: any = {
       PENDING: 'bg-yellow-100 text-yellow-700',
@@ -83,7 +74,6 @@ export default function AdminDashboard() {
     return colors[status] || 'bg-gray-100 text-gray-700';
   };
 
-  // ✅ UPDATED: Using Lucide icons instead of emojis
   const getStatusIcon = (status: string) => {
     const icons: any = {
       PENDING: <Clock size={20} className="text-yellow-600" />,
@@ -105,99 +95,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        {/* Logo */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-600 p-2 rounded-xl">
-              <Droplets className="text-white" size={24} />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">WashWise</h1>
-              <p className="text-xs text-gray-500">Admin Panel</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 p-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            MANAGEMENT
-          </p>
-          <div className="space-y-1">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
-                activeTab === 'overview'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <LayoutDashboard size={20} />
-              <span>Overview</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('services')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
-                activeTab === 'services'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <Settings size={20} />
-              <span>Services</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('orders')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
-                activeTab === 'orders'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <Package size={20} />
-              <span>Orders</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('users')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
-                activeTab === 'users'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <Users size={20} />
-              <span>Users</span>
-            </button>
-          </div>
-        </nav>
-
-        {/* User Profile */}
-        <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center">
-              <UserCircle className="text-white" size={24} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-900 text-sm truncate">{user?.fullName || 'Admin'}</p>
-              <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-            </div>
-          </div>
-          <div className="inline-block bg-gray-900 text-white text-xs px-3 py-1 rounded-full font-medium mb-4">
-            Admin
-          </div>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg font-medium transition-all"
-          >
-            <LogOut size={18} />
-            <span>Logout</span>
-          </button>
-        </div>
-      </aside>
+      <Sidebar userRole="ADMIN" activePage={activeTab} />
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto">

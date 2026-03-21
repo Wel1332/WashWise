@@ -14,16 +14,21 @@ import java.util.UUID;
 @Repository
 public interface ServiceRepository extends JpaRepository<ServiceEntity, UUID> {
 
-    // Custom derived queries required by your ServiceService
+    // Returns a list of all active services, newest first
     List<ServiceEntity> findByIsActiveTrueOrderByCreatedAtDesc();
 
+    // Returns a paginated list of active services, newest first
     Page<ServiceEntity> findByIsActiveTrueOrderByCreatedAtDesc(Pageable pageable);
 
+    // Finds active services matching a specific category, newest first
     List<ServiceEntity> findByCategoryIgnoreCaseAndIsActiveTrueOrderByCreatedAtDesc(String category);
 
+    // Checks if a service with the exact name already exists (useful for validation)
     boolean existsByNameIgnoreCase(String name);
 
-    // Custom JPQL query for the search functionality
-    @Query("SELECT s FROM ServiceEntity s WHERE LOWER(s.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(s.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    // Custom JPQL query to search for keywords in both the name and description
+    @Query("SELECT s FROM ServiceEntity s WHERE " +
+           "LOWER(s.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(s.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<ServiceEntity> searchServices(@Param("keyword") String keyword);
 }

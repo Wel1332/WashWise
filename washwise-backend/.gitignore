@@ -34,7 +34,20 @@ build/
 src/main/resources/application.properties
 src/main/resources/application-*.properties
 
-node_modules/
-dist/
+# Environment files
 .env
 .env.local
+.env.production
+.env.*.local
+
+# Application properties with sensitive data
+application-dev.properties
+application-prod.properties
+
+# Upload directory
+uploads/
+profile-images/
+
+# Logs
+*.log
+logs/

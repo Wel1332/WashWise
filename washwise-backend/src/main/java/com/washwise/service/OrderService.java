@@ -6,201 +6,204 @@ import com.washwise.dto.response.OrderResponse;
 import com.washwise.entity.Order;
 import com.washwise.entity.ServiceEntity;
 import com.washwise.entity.User;
-import com.washwise.exception.ResourceNotFoundException;
 import com.washwise.repository.OrderRepository;
 import com.washwise.repository.ServiceRepository;
 import com.washwise.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@Service
+@org.springframework.stereotype.Service
 @RequiredArgsConstructor
-@Slf4j
-@Transactional
 public class OrderService {
-    
+
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final ServiceRepository serviceRepository;
 
-    /**
-     * Get all orders (admin only)
-     */
-    public List<OrderResponse> getAllOrders() {
-        log.debug("Fetching all orders");
-        return orderRepository.findAllByOrderByCreatedAtDesc()
-            .stream()
-            .map(this::mapToResponse)
-            .collect(Collectors.toList());
-    }
+    @Transactional
+    public OrderResponse createOrder(String email, CreateOrderRequest request) {
+        // Get user
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    /**
-     * Get current user's orders
-     */
-    public List<OrderResponse> getUserOrders() {
-        User user = getCurrentUser();
-        log.debug("Fetching orders for user: {}", user.getId());
-        return orderRepository.findByUserOrderByCreatedAtDesc(user)
-            .stream()
-            .map(this::mapToResponse)
-            .collect(Collectors.toList());
-    }
-    
-    /**
-     * Get orders by status
-     */
-    public List<OrderResponse> getOrdersByStatus(String status) {
-        log.debug("Fetching orders with status: {}", status);
-        return orderRepository.findByStatusOrderByCreatedAtDesc(status)
-            .stream()
-            .map(this::mapToResponse)
-            .collect(Collectors.toList());
-    }
-
-    /**
-     * Get order by ID
-     */
-    public OrderResponse getOrderById(UUID id) {
-        log.debug("Fetching order by ID: {}", id);
-        Order order = orderRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + id));
-        
-        // Check if user can access this order
-        User currentUser = getCurrentUser();
-        if (!order.getUser().getId().equals(currentUser.getId()) && !isAdmin()) {
-            throw new ResourceNotFoundException("Order not found with ID: " + id);
-        }
-        
-        return mapToResponse(order);
-    }
-
-    /**
-     * Create new order
-     */
-    public OrderResponse createOrder(CreateOrderRequest request) {
-        log.info("Creating new order for service: {}", request.getServiceId());
-
-        User user = getCurrentUser();
+        // Get service
         ServiceEntity service = serviceRepository.findById(request.getServiceId())
-            .orElseThrow(() -> new ResourceNotFoundException("Service not found with ID: " + request.getServiceId()));
+                .orElseThrow(() -> new RuntimeException("Service not found"));
 
+        // Parse scheduled date and time
+        LocalDateTime scheduledDateTime = parseScheduledDateTime(
+            request.getScheduledDate(), 
+            request.getPickupTimeSlot()
+        );
+
+        // Build notes from all fields
+        String notes = buildNotes(request);
+
+        // Create order
         Order order = Order.builder()
-            .user(user)
-            .service(service)
-            .status("PENDING")
-            .totalPrice(service.getPrice())
-            .notes(request.getNotes())
-            .location(request.getLocation())
-            .scheduledDate(request.getScheduledDate().atStartOfDay())
-            .build();
+                .user(user)
+                .service(service)
+                .totalPrice(request.getTotalPrice())
+                .location(request.getLocation())
+                .scheduledDate(scheduledDateTime)
+                .notes(notes)
+                .status(request.getStatus() != null ? request.getStatus() : "PENDING")
+                .build();
 
         Order savedOrder = orderRepository.save(order);
-        log.info("Order created successfully with ID: {}", savedOrder.getId());
+
         return mapToResponse(savedOrder);
     }
-     /**
-     * Update order (admin only)
-     */
-     public OrderResponse updateOrder(UUID id, UpdateOrderRequest request) {
-        log.info("Updating order with ID: {}", id);
 
+    public List<OrderResponse> getMyOrders(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Order> orders = orderRepository.findByUserOrderByCreatedAtDesc(user);
+        return orders.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<OrderResponse> getAllOrders() {
+        List<Order> orders = orderRepository.findAll();
+        return orders.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public OrderResponse updateOrder(String orderId, UpdateOrderRequest request) {
+        UUID id = UUID.fromString(orderId);
         Order order = orderRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Order not found"));
 
+        // Update fields if provided
         if (request.getStatus() != null) {
             order.setStatus(request.getStatus());
+            
+            // If status is COMPLETED, set completed_date
+            if ("COMPLETED".equals(request.getStatus())) {
+                order.setCompletedDate(LocalDateTime.now());
+            }
         }
+
         if (request.getNotes() != null) {
             order.setNotes(request.getNotes());
         }
+
         if (request.getLocation() != null) {
             order.setLocation(request.getLocation());
         }
 
         Order updatedOrder = orderRepository.save(order);
-        log.info("Order updated successfully with ID: {}", id);
         return mapToResponse(updatedOrder);
     }
 
-    /**
-     * Cancel order
-     */
-    public OrderResponse cancelOrder(UUID id) {
-        log.info("Cancelling order with ID: {}", id);
-
-        Order order = orderRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + id));
-
-        User currentUser = getCurrentUser();
-        if (!order.getUser().getId().equals(currentUser.getId()) && !isAdmin()) {
-            throw new ResourceNotFoundException("Order not found with ID: " + id);
+    private LocalDateTime parseScheduledDateTime(LocalDate date, String timeSlot) {
+        LocalTime time;
+        
+        try {
+            if (timeSlot != null && !timeSlot.isEmpty()) {
+                // Parse time slot (format: "8-10" means 8:00 AM)
+                String[] times = timeSlot.split("-");
+                int hour = Integer.parseInt(times[0]);
+                time = LocalTime.of(hour, 0);
+            } else {
+                time = LocalTime.of(9, 0); // Default to 9 AM
+            }
+        } catch (Exception e) {
+            time = LocalTime.of(9, 0); // Default to 9 AM on error
         }
-
-        order.setStatus("CANCELLED");
-        Order updatedOrder = orderRepository.save(order);
-        log.info("Order cancelled successfully with ID: {}", id);
-        return mapToResponse(updatedOrder);
+        
+        return LocalDateTime.of(date, time);
     }
 
-    /**
-     * Delete order (admin only)
-     */
-    public void deleteOrder(UUID id) {
-        log.info("Deleting order with ID: {}", id);
-
-        if (!orderRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Order not found with ID: " + id);
+    private String buildNotes(CreateOrderRequest request) {
+        StringBuilder notes = new StringBuilder();
+        
+        if (request.getWeightKg() != null && request.getWeightKg() > 0) {
+            notes.append("Weight: ").append(request.getWeightKg()).append(" kg\n");
         }
-
-        orderRepository.deleteById(id);
-        log.info("Order deleted successfully with ID: {}", id);
+        
+        if (request.getPickupTimeSlot() != null && !request.getPickupTimeSlot().isEmpty()) {
+            notes.append("Pickup Time Slot: ").append(request.getPickupTimeSlot()).append("\n");
+        }
+        
+        if (request.getDeliveryDate() != null && !request.getDeliveryDate().isEmpty()) {
+            notes.append("Delivery Date: ").append(request.getDeliveryDate()).append("\n");
+        }
+        
+        if (request.getDeliveryTimeSlot() != null && !request.getDeliveryTimeSlot().isEmpty()) {
+            notes.append("Delivery Time Slot: ").append(request.getDeliveryTimeSlot()).append("\n");
+        }
+        
+        if (request.getSpecialInstructions() != null && !request.getSpecialInstructions().isEmpty()) {
+            notes.append("\nSpecial Instructions:\n").append(request.getSpecialInstructions());
+        }
+        
+        String result = notes.toString().trim();
+        return result.isEmpty() ? null : result;
     }
 
-    /**
-     * Get current authenticated user
-     */
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        return userRepository.findByEmail(email)
-            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    private Double extractWeightFromNotes(String notes) {
+        if (notes == null || notes.isEmpty()) {
+            return 0.0;
+        }
+        
+        // Try to extract weight from notes (format: "Weight: 5.0 kg")
+        Pattern pattern = Pattern.compile("Weight:\\s*(\\d+\\.?\\d*)\\s*kg");
+        Matcher matcher = pattern.matcher(notes);
+        
+        if (matcher.find()) {
+            try {
+                return Double.parseDouble(matcher.group(1));
+            } catch (NumberFormatException e) {
+                return 0.0;
+            }
+        }
+        
+        return 0.0;
     }
 
-    /**
-     * Check if current user is admin
-     */
-    private boolean isAdmin() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication.getAuthorities().stream()
-            .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
-    }
-
-    /**
-     * Map Order entity to OrderResponse DTO
-     */
     private OrderResponse mapToResponse(Order order) {
-    return OrderResponse.builder()
-        .id(order.getId())
-        .userId(order.getUser().getId())
-        .serviceId(order.getService().getId())
-        .serviceName(order.getService().getName())
-        .status(order.getStatus())
-        .totalPrice(order.getTotalPrice())
-        .notes(order.getNotes())
-        .location(order.getLocation())
-        .scheduledDate(order.getScheduledDate())
-        .completedDate(order.getCompletedDate())
-        .createdAt(order.getCreatedAt() != null ? order.getCreatedAt() : LocalDateTime.now())
-        .updatedAt(order.getUpdatedAt() != null ? order.getUpdatedAt() : LocalDateTime.now())
-        .build();
-}
+        // Extract weight from notes for frontend display
+        Double weightKg = extractWeightFromNotes(order.getNotes());
+        
+        return OrderResponse.builder()
+                .id(order.getId().toString())
+                .user(OrderResponse.UserBasicInfo.builder()
+                        .id(order.getUser().getId().toString())
+                        .fullName(order.getUser().getFullName())
+                        .email(order.getUser().getEmail())
+                        .build())
+                .service(OrderResponse.ServiceBasicInfo.builder()
+                        .id(order.getService().getId().toString())
+                        .name(order.getService().getName())
+                        .description(order.getService().getDescription())
+                        .category(order.getService().getCategory())
+                        .price(order.getService().getPrice())
+                        .duration(order.getService().getDuration())
+                        .imageUrl(order.getService().getImageUrl())
+                        .build())
+                .totalPrice(order.getTotalPrice())
+                .location(order.getLocation())
+                .scheduledDate(order.getScheduledDate())
+                .completedDate(order.getCompletedDate())
+                .notes(order.getNotes())
+                .status(order.getStatus())
+                .createdAt(order.getCreatedAt())
+                .updatedAt(order.getUpdatedAt())
+                .weightKg(weightKg)
+                .build();
+    }
 }

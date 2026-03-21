@@ -8,15 +8,12 @@ import {
   Sparkles, 
   Wind, 
   Package as PackageIcon,
-  LayoutDashboard,
-  ShoppingCart,
-  UserCircle,
-  LogOut,
-  Droplets,
-  User as UserIcon,
-  Scale
+  Scale,
+  AlertCircle
 } from "lucide-react";
 import { useAuthStore } from '../store/authStore';
+import { ordersAPI } from '../services/api';
+import Sidebar from '../components/Sidebar';
 
 type ServiceType = "wash-fold" | "dry-clean" | "iron-press" | "premium";
 
@@ -75,7 +72,6 @@ const services: Service[] = [
 ];
 
 export default function BookService() {
-  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
   const [weight, setWeight] = useState<string>("");
@@ -85,6 +81,8 @@ export default function BookService() {
   const [deliveryTime, setDeliveryTime] = useState("");
   const [address, setAddress] = useState("123 Main Street, Apt 4B");
   const [specialInstructions, setSpecialInstructions] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const calculatePrice = () => {
     if (!selectedService || !weight || parseFloat(weight) <= 0) return 0;
@@ -95,95 +93,74 @@ export default function BookService() {
 
   const totalPrice = calculatePrice();
 
-  const handleBookService = () => {
+  const handleBookService = async () => {
+    // Validation
     if (!selectedService || !pickupDate || !pickupTime || !weight || parseFloat(weight) <= 0) {
-      alert("Please select a service, weight, and pickup time");
+      setError("Please select a service, weight, and pickup time");
       return;
     }
-    alert(`Service booked successfully! Total: $${totalPrice.toFixed(2)}\nWe'll send you a confirmation email.`);
-  };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+    if (!address.trim()) {
+      setError("Please provide a pickup address");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setError(null);
+  
+      // Map service type to backend service UUID
+      // REPLACE WITH YOUR ACTUAL UUIDs FROM THE DATABASE!
+      const serviceIdMap: Record<ServiceType, string> = {
+        "wash-fold": "jkl-012-mno...",      // Copy UUID from Wash & Fold
+        "dry-clean": "abc-123-def...",      // Copy UUID from Dry Cleaning
+        "iron-press": "def-456-ghi...",     // Copy UUID from Iron & Press
+        "premium": "ghi-789-jkl..."         // Copy UUID from Premium Care
+      };
+  
+      const orderData = {
+        serviceId: serviceIdMap[selectedService],
+        weightKg: parseFloat(weight),
+        totalPrice: totalPrice,
+        pickupAddress: address,
+        pickupDate: pickupDate,
+        pickupTimeSlot: pickupTime,
+        deliveryDate: deliveryDate || pickupDate,
+        deliveryTimeSlot: deliveryTime || pickupTime,
+        specialInstructions: specialInstructions.trim() || null,
+        status: "PENDING"
+      };
+  
+      const response = await ordersAPI.createOrder(orderData);
+  
+      alert(`Service booked successfully! Total: $${totalPrice.toFixed(2)}\nOrder ID: ${response.data.data?.id || 'N/A'}\nWe'll send you a confirmation email.`);
+      
+      // Clear form
+      setSelectedService(null);
+      setWeight("");
+      setPickupDate("");
+      setPickupTime("");
+      setDeliveryDate("");
+      setDeliveryTime("");
+      setSpecialInstructions("");
+      
+      // Redirect to orders page
+      setTimeout(() => {
+        navigate('/my-orders');
+      }, 1500);
+  
+    } catch (error: any) {
+      console.error('Failed to create order:', error);
+      setError(error.response?.data?.message || 'Failed to book service. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
-        {/* Logo */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-600 p-2 rounded-xl">
-              <Droplets className="text-white" size={24} />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">WashWise</h1>
-              <p className="text-xs text-gray-500">Customer Portal</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 p-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            MENU
-          </p>
-          <div className="space-y-1">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-700 hover:bg-gray-100 transition-all"
-            >
-              <LayoutDashboard size={20} />
-              <span>Dashboard</span>
-            </button>
-
-            <button
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium bg-blue-600 text-white transition-all"
-            >
-              <ShoppingCart size={20} />
-              <span>Book Service</span>
-            </button>
-
-            <button
-              onClick={() => navigate('/my-orders')}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-700 hover:bg-gray-100 transition-all"
-            >
-              <PackageIcon size={20} />
-              <span>My Orders</span>
-            </button>
-
-            <button
-              onClick={() => navigate('/profile')}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-700 hover:bg-gray-100 transition-all"
-            >
-              <UserCircle size={20} />
-              <span>Profile</span>
-            </button>
-          </div>
-        </nav>
-
-        {/* User Profile */}
-        <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-              <UserIcon className="text-white" size={24} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-900 text-sm truncate">{user?.fullName || 'Customer'}</p>
-              <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg font-medium transition-all"
-          >
-            <LogOut size={18} />
-            <span>Logout</span>
-          </button>
-        </div>
-      </aside>
+      <Sidebar userRole="CUSTOMER" activePage="book-service" />
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto">
@@ -193,6 +170,22 @@ export default function BookService() {
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Book a Service</h1>
             <p className="text-lg text-gray-600">Schedule your laundry pickup and delivery</p>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
+              <AlertCircle className="text-red-600 flex-shrink-0" size={20} />
+              <div>
+                <p className="text-red-900 font-medium">{error}</p>
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="ml-auto text-red-600 hover:text-red-700"
+              >
+                ✕
+              </button>
+            </div>
+          )}
 
           {/* Service Selection */}
           <div className="mb-8">
@@ -409,7 +402,7 @@ export default function BookService() {
                   }}
                   className="text-blue-600 font-medium text-sm hover:underline"
                 >
-                  Use same address as pickup
+                  Use same date/time as pickup
                 </button>
               </div>
             </div>
@@ -460,17 +453,26 @@ export default function BookService() {
                     setDeliveryDate("");
                     setDeliveryTime("");
                     setSpecialInstructions("");
+                    setError(null);
                   }}
-                  className="bg-white/10 text-white border border-white/30 rounded-xl px-6 py-3 text-sm font-medium hover:bg-white/20 transition-colors"
+                  disabled={isSubmitting}
+                  className="bg-white/10 text-white border border-white/30 rounded-xl px-6 py-3 text-sm font-medium hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Clear
                 </button>
                 <button
                   onClick={handleBookService}
-                  disabled={!selectedService || !pickupDate || !pickupTime || !weight || parseFloat(weight) <= 0}
-                  className="bg-white text-blue-600 rounded-xl px-8 py-3 text-sm font-semibold hover:bg-blue-50 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!selectedService || !pickupDate || !pickupTime || !weight || parseFloat(weight) <= 0 || isSubmitting}
+                  className="bg-white text-blue-600 rounded-xl px-8 py-3 text-sm font-semibold hover:bg-blue-50 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  Book Service
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      Processing...
+                    </>
+                  ) : (
+                    'Book Service'
+                  )}
                 </button>
               </div>
             </div>

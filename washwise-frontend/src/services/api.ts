@@ -1,51 +1,68 @@
 import axios from 'axios';
-import { useAuthStore } from '../store/authStore';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1',
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
-// Request interceptor - Add token to EVERY request
+// Request interceptor to add token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
-// Response interceptor - Handle token refresh
+// Response interceptor to handle token refresh
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
+    // If error is 401 and we haven't tried to refresh yet
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
         const refreshToken = localStorage.getItem('refreshToken');
+        
         if (!refreshToken) {
-          useAuthStore.getState().logout();
+          // No refresh token, logout user
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          window.location.href = '/login';
           return Promise.reject(error);
         }
 
+        // Try to refresh token
         const { data } = await axios.post(
           'http://localhost:8080/api/v1/auth/refresh-token',
           { refreshToken }
         );
 
-        const { accessToken, refreshToken: newRefreshToken } = data.data;
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', newRefreshToken);
+        // Save new tokens
+        localStorage.setItem('token', data.data.token);
+        if (data.data.refreshToken) {
+          localStorage.setItem('refreshToken', data.data.refreshToken);
+        }
 
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        // Retry original request with new token
+        originalRequest.headers.Authorization = `Bearer ${data.data.token}`;
         return api(originalRequest);
       } catch (refreshError) {
-        useAuthStore.getState().logout();
+        // Refresh failed, logout user
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }
@@ -56,27 +73,20 @@ api.interceptors.response.use(
 
 // Auth API
 export const authAPI = {
-  login: (email: string, password: string) =>
-    api.post('/auth/login', { email, password }),
+  login: (credentials: { email: string; password: string }) =>
+    api.post('/auth/login', credentials),
   
-  register: (email: string, password: string, fullName: string, confirmPassword: string) => {
-    return api.post('/auth/register', {
-      email,
-      password,
-      fullName,
-      confirmPassword
-    });
-  },
+  register: (userData: Record<string, unknown>) =>
+    api.post('/auth/register', userData),
+  
+  logout: () =>
+    api.post('/auth/logout'),
 };
 
 // Profile API
 export const profileAPI = {
-  getProfile: () =>
-    api.get('/profile'),
-  
-  updateProfile: (data: Record<string, unknown>) =>
-    api.put('/profile', data),
-  
+  getProfile: () => api.get('/profile'),
+  updateProfile: (data: Record<string, unknown>) => api.put('/profile', data),
   uploadProfileImage: (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -84,21 +94,7 @@ export const profileAPI = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
-  
-  getPublicProfile: (userId: string) =>
-    api.get(`/profile/${userId}`),
-};
-
-// Services API
-export const servicesAPI = {
-  getServices: (page: number, size: number) =>
-    api.get(`/services?page=${page}&size=${size}`),
-  
-  getServiceById: (id: string) =>
-    api.get(`/services/${id}`),
-  
-  createService: (data: Record<string, unknown>) =>
-    api.post('/services', data),
+  getPublicProfile: (userId: string) => api.get(`/profile/${userId}`),
 };
 
 // Orders API
