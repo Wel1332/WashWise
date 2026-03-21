@@ -5,6 +5,7 @@ import com.washwise.dto.request.UpdateOrderRequest;
 import com.washwise.dto.response.OrderResponse;
 import com.washwise.entity.Order;
 import com.washwise.entity.ServiceEntity;
+import com.washwise.entity.UserRole;
 import com.washwise.entity.User;
 import com.washwise.repository.OrderRepository;
 import com.washwise.repository.ServiceRepository;
@@ -28,6 +29,23 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final ServiceRepository serviceRepository;
+
+    @Transactional
+    public void deleteOrder(String orderId, String email) {
+        UUID id = UUID.fromString(orderId);
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Security check: Only allow deletion if the user owns the order OR is an ADMIN
+        if (!order.getUser().getId().equals(user.getId()) && !user.hasRole(UserRole.ADMIN)) {
+            throw new RuntimeException("Not authorized to delete this order");
+        }
+
+        orderRepository.delete(order);
+    }
 
     @Transactional
     public OrderResponse createOrder(String email, CreateOrderRequest request) {

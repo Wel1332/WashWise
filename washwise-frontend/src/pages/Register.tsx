@@ -41,7 +41,7 @@ export default function Register() {
     }
 
     try {
-      const { data } = await authAPI.register(email, password, fullName, confirmPassword);
+      const { data } = await authAPI.register({ email, password, fullName, confirmPassword });
       const { id, email: userEmail, fullName: name, role, accessToken, refreshToken } = data.data;
       login({ id, email: userEmail, fullName: name, role }, accessToken, refreshToken);
       navigate('/dashboard');

@@ -9,7 +9,8 @@ import {
   Wind, 
   Package as PackageIcon,
   Scale,
-  AlertCircle
+  AlertCircle,
+  CheckCircle
 } from "lucide-react";
 import { useAuthStore } from '../store/authStore';
 import { ordersAPI } from '../services/api';
@@ -83,6 +84,7 @@ export default function BookService() {
   const [specialInstructions, setSpecialInstructions] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null); // Added success state
 
   const calculatePrice = () => {
     if (!selectedService || !weight || parseFloat(weight) <= 0) return 0;
@@ -108,14 +110,14 @@ export default function BookService() {
     try {
       setIsSubmitting(true);
       setError(null);
+      setSuccess(null); // Clear any previous success messages
   
       // Map service type to backend service UUID
-      // REPLACE WITH YOUR ACTUAL UUIDs FROM THE DATABASE!
       const serviceIdMap: Record<ServiceType, string> = {
-        "wash-fold": "jkl-012-mno...",      // Copy UUID from Wash & Fold
-        "dry-clean": "abc-123-def...",      // Copy UUID from Dry Cleaning
-        "iron-press": "def-456-ghi...",     // Copy UUID from Iron & Press
-        "premium": "ghi-789-jkl..."         // Copy UUID from Premium Care
+        "wash-fold": "583ea981-df5b-45a3-ab9d-47e9a2f0965a",
+        "dry-clean": "26f2fa14-99b7-4593-9df8-f2b004f2b9cd",  
+        "iron-press": "4f44050c-d09b-4f32-a7a3-1bb06d61fb8a",
+        "premium": "78197d33-1beb-406c-acef-4c92132e6d49"
       };
   
       const orderData = {
@@ -133,7 +135,8 @@ export default function BookService() {
   
       const response = await ordersAPI.createOrder(orderData);
   
-      alert(`Service booked successfully! Total: $${totalPrice.toFixed(2)}\nOrder ID: ${response.data.data?.id || 'N/A'}\nWe'll send you a confirmation email.`);
+      // Replace alert with green banner
+      setSuccess(`Service booked successfully! Total: $${totalPrice.toFixed(2)}.`);
       
       // Clear form
       setSelectedService(null);
@@ -144,10 +147,10 @@ export default function BookService() {
       setDeliveryTime("");
       setSpecialInstructions("");
       
-      // Redirect to orders page
+      // Redirect to orders page after 2 seconds to let them read the banner
       setTimeout(() => {
         navigate('/my-orders');
-      }, 1500);
+      }, 2000);
   
     } catch (error: any) {
       console.error('Failed to create order:', error);
@@ -170,6 +173,22 @@ export default function BookService() {
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Book a Service</h1>
             <p className="text-lg text-gray-600">Schedule your laundry pickup and delivery</p>
           </div>
+
+          {/* Success Message Banner */}
+          {success && (
+            <div className="mb-6 bg-green-50 border border-green-200 rounded-2xl p-4 flex items-start gap-3">
+              <CheckCircle className="text-green-600 flex-shrink-0" size={20} />
+              <div>
+                <p className="text-green-900 font-medium">{success}</p>
+              </div>
+              <button
+                onClick={() => setSuccess(null)}
+                className="ml-auto text-green-600 hover:text-green-700"
+              >
+                ✕
+              </button>
+            </div>
+          )}
 
           {/* Error Message */}
           {error && (
@@ -454,6 +473,7 @@ export default function BookService() {
                     setDeliveryTime("");
                     setSpecialInstructions("");
                     setError(null);
+                    setSuccess(null);
                   }}
                   disabled={isSubmitting}
                   className="bg-white/10 text-white border border-white/30 rounded-xl px-6 py-3 text-sm font-medium hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

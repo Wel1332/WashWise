@@ -97,6 +97,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 
                 .authorizeHttpRequests(authz -> authz
+                    // Allow public access to uploaded files
+                    .requestMatchers("/uploads/**").permitAll()
+                    
                     // Public auth endpoints
                     .requestMatchers("/api/v1/auth/health").permitAll()
                     .requestMatchers("/api/v1/auth/register").permitAll()
@@ -116,7 +119,7 @@ public class SecurityConfig {
                     .requestMatchers("GET", "/api/v1/orders/**").authenticated()
                     .requestMatchers("POST", "/api/v1/orders").authenticated()
                     .requestMatchers("PUT", "/api/v1/orders/**").authenticated()
-                    .requestMatchers("DELETE", "/api/v1/orders/**").hasRole("ADMIN")
+                    .requestMatchers("DELETE", "/api/v1/orders/**").authenticated()
 
                     // Everything else requires auth
                     .anyRequest().authenticated()

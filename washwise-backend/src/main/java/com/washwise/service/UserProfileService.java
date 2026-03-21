@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.UUID;
 
 @Service
@@ -23,132 +24,81 @@ public class UserProfileService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private ImageService imageService;
+    // Helper method to convert DB bytes to a Base64 String for the frontend
+    private String getBase64Image(UserProfile profile) {
+        if (profile.getProfileImage() != null && profile.getProfileImage().length > 0) {
+            String contentType = profile.getProfileImageContentType();
+            if (contentType == null || contentType.isEmpty()) {
+                contentType = "image/jpeg"; // Fallback
+            }
+            return "data:" + contentType + ";base64," +
+                    Base64.getEncoder().encodeToString(profile.getProfileImage());
+        }
+        return null;
+    }
 
-    // ✅ Changed parameter from String to UUID
+    // Helper method to safely map Entity to DTO
+    private UserProfileResponse mapToResponse(User user, UserProfile profile) {
+        return UserProfileResponse.builder()
+                .id(profile.getId() != null ? profile.getId().toString() : null)
+                .userId(user.getId().toString())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .role(user.getRole().toString())
+                .bio(profile.getBio())
+                .phoneNumber(profile.getPhoneNumber())
+                .address(profile.getAddress())
+                .city(profile.getCity())
+                .zipCode(profile.getZipCode())
+                .profileImageBase64(getBase64Image(profile)) // <-- Ensures Base64 is injected!
+                .createdAt(profile.getCreatedAt())
+                .updatedAt(profile.getUpdatedAt())
+                .build();
+    }
+
     public UserProfileResponse getUserProfile(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // ✅ Changed to findByUser instead of findByUserId
         UserProfile profile = userProfileRepository.findByUser(user)
-                .orElseGet(() -> {
-                    UserProfile newProfile = UserProfile.builder()
-                            .user(user)
-                            .build();
-                    return userProfileRepository.save(newProfile);
-                });
+                .orElseGet(() -> userProfileRepository.save(UserProfile.builder().user(user).build()));
 
-        return new UserProfileResponse(
-                profile.getId().toString(),
-                user.getId().toString(),
-                user.getFullName(),
-                user.getEmail(),
-                user.getRole().toString(),
-                profile.getBio(),
-                profile.getPhoneNumber(),
-                profile.getAddress(),
-                profile.getCity(),
-                profile.getZipCode(),
-                profile.getProfileImageUrl(),
-                profile.getCreatedAt(),
-                profile.getUpdatedAt()
-        );
+        return mapToResponse(user, profile);
     }
 
-    // ✅ Changed parameter from String to UUID
     public UserProfileResponse updateUserProfile(UUID userId, UserProfileRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // ✅ Changed to findByUser instead of findByUserId
         UserProfile profile = userProfileRepository.findByUser(user)
-                .orElseGet(() -> {
-                    UserProfile newProfile = UserProfile.builder()
-                            .user(user)
-                            .build();
-                    return userProfileRepository.save(newProfile);
-                });
+                .orElseGet(() -> userProfileRepository.save(UserProfile.builder().user(user).build()));
 
-        // ✅ Only update if values are not null
-        if (request.getBio() != null) {
-            profile.setBio(request.getBio());
-        }
-        if (request.getPhoneNumber() != null) {
-            profile.setPhoneNumber(request.getPhoneNumber());
-        }
-        if (request.getAddress() != null) {
-            profile.setAddress(request.getAddress());
-        }
-        if (request.getCity() != null) {
-            profile.setCity(request.getCity());
-        }
-        if (request.getZipCode() != null) {
-            profile.setZipCode(request.getZipCode());
-        }
+        if (request.getBio() != null) profile.setBio(request.getBio());
+        if (request.getPhoneNumber() != null) profile.setPhoneNumber(request.getPhoneNumber());
+        if (request.getAddress() != null) profile.setAddress(request.getAddress());
+        if (request.getCity() != null) profile.setCity(request.getCity());
+        if (request.getZipCode() != null) profile.setZipCode(request.getZipCode());
         
         profile.setUpdatedAt(LocalDateTime.now());
-
         UserProfile updatedProfile = userProfileRepository.save(profile);
 
-        return new UserProfileResponse(
-                updatedProfile.getId().toString(),
-                user.getId().toString(),
-                user.getFullName(),
-                user.getEmail(),
-                user.getRole().toString(),
-                updatedProfile.getBio(),
-                updatedProfile.getPhoneNumber(),
-                updatedProfile.getAddress(),
-                updatedProfile.getCity(),
-                updatedProfile.getZipCode(),
-                updatedProfile.getProfileImageUrl(),
-                updatedProfile.getCreatedAt(),
-                updatedProfile.getUpdatedAt()
-        );
+        return mapToResponse(user, updatedProfile);
     }
 
-    // ✅ Changed parameter from String to UUID
     public UserProfileResponse uploadProfileImage(UUID userId, MultipartFile file) throws IOException {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // ✅ Changed to findByUser instead of findByUserId
         UserProfile profile = userProfileRepository.findByUser(user)
-                .orElseGet(() -> {
-                    UserProfile newProfile = UserProfile.builder()
-                            .user(user)
-                            .build();
-                    return userProfileRepository.save(newProfile);
-                });
+                .orElseGet(() -> userProfileRepository.save(UserProfile.builder().user(user).build()));
 
-        // Delete old image if exists
-        if (profile.getProfileImageUrl() != null) {
-            imageService.deleteImage(profile.getProfileImageUrl());
-        }
-
-        // Upload new image
-        String imageUrl = imageService.uploadImage(file);
-        profile.setProfileImageUrl(imageUrl);
+        // Convert the file directly to bytes and save to the database
+        profile.setProfileImage(file.getBytes());
+        profile.setProfileImageContentType(file.getContentType());
         profile.setUpdatedAt(LocalDateTime.now());
 
         UserProfile updatedProfile = userProfileRepository.save(profile);
 
-        return new UserProfileResponse(
-                updatedProfile.getId().toString(),
-                user.getId().toString(),
-                user.getFullName(),
-                user.getEmail(),
-                user.getRole().toString(),
-                updatedProfile.getBio(),
-                updatedProfile.getPhoneNumber(),
-                updatedProfile.getAddress(),
-                updatedProfile.getCity(),
-                updatedProfile.getZipCode(),
-                updatedProfile.getProfileImageUrl(),
-                updatedProfile.getCreatedAt(),
-                updatedProfile.getUpdatedAt()
-        );
+        return mapToResponse(user, updatedProfile);
     }
 }

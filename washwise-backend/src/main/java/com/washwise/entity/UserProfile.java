@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -41,8 +43,12 @@ public class UserProfile {
     @Column(length = 20)
     private String zipCode;
 
-    @Column(columnDefinition = "TEXT")
-    private String profileImageUrl;
+    @JdbcTypeCode(SqlTypes.VARBINARY)
+    @Column(name = "profile_image", columnDefinition = "bytea")
+    private byte[] profileImage;
+
+    @Column(name = "profile_image_content_type")
+    private String profileImageContentType;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

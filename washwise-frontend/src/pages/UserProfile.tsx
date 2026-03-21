@@ -27,7 +27,7 @@ interface Profile {
   address?: string;
   city?: string;
   zipCode?: string;
-  profileImageUrl?: string;
+  profileImageBase64?: string;
 }
 
 export default function UserProfile() {
@@ -77,8 +77,9 @@ export default function UserProfile() {
         confirmPassword: "",
       });
       
-      if (profileData.profileImageUrl) {
-        setProfileImage(`http://localhost:8080${profileData.profileImageUrl}`);
+      // UPDATED: Directly use the Base64 string from the database
+      if (profileData.profileImageBase64) {
+        setProfileImage(profileData.profileImageBase64);
       }
     } catch (err: any) {
       console.error('Error fetching profile:', err);
@@ -103,8 +104,10 @@ export default function UserProfile() {
     try {
       const { data } = await profileAPI.uploadProfileImage(file);
       setProfile(data.data);
-      if (data.data.profileImageUrl) {
-        setProfileImage(`http://localhost:8080${data.data.profileImageUrl}`);
+      
+      // UPDATED: Directly use the Base64 string from the database
+      if (data.data.profileImageBase64) {
+        setProfileImage(data.data.profileImageBase64);
       }
       setSuccess('Profile image updated successfully!');
       setTimeout(() => setSuccess(''), 3000);
@@ -144,24 +147,34 @@ export default function UserProfile() {
     }
   };
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     if (formData.newPassword !== formData.confirmPassword) {
       setError('New passwords do not match!');
       return;
     }
-    if (formData.newPassword.length < 6) {
-      setError('Password must be at least 6 characters long!');
+    if (formData.newPassword.length < 8) { 
+      setError('Password must be at least 8 characters long!');
       return;
     }
     
-    setSuccess('Password changed successfully!');
-    setFormData({
-      ...formData,
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
-    setTimeout(() => setSuccess(''), 3000);
+    try {
+      // Call the backend API
+      await profileAPI.changePassword({
+        currentPassword: formData.currentPassword,
+        newPassword: formData.newPassword
+      });
+      
+      setSuccess('Password changed successfully!');
+      setFormData({
+        ...formData,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to change password');
+    }
   };
 
   const handleLogout = () => {
@@ -238,7 +251,7 @@ export default function UserProfile() {
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center overflow-hidden">
               {profileImage ? (
-                <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                <img src={profileImage} alt="Profile" className="w-full h-full object-cover" onError={() => console.error("BROKEN IMAGE STRING:", profileImage)} />
               ) : (
                 <UserIcon className="text-white" size={24} />
               )}

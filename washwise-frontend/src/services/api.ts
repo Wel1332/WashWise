@@ -10,7 +10,7 @@ const api = axios.create({
 // Request interceptor to add token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -36,7 +36,7 @@ api.interceptors.response.use(
         
         if (!refreshToken) {
           // No refresh token, logout user
-          localStorage.removeItem('token');
+          localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
           window.location.href = '/login';
           return Promise.reject(error);
@@ -49,7 +49,7 @@ api.interceptors.response.use(
         );
 
         // Save new tokens
-        localStorage.setItem('token', data.data.token);
+        localStorage.setItem('accessToken', data.data.token);
         if (data.data.refreshToken) {
           localStorage.setItem('refreshToken', data.data.refreshToken);
         }
@@ -59,7 +59,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         // Refresh failed, logout user
-        localStorage.removeItem('token');
+        localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
         window.location.href = '/login';
@@ -95,6 +95,7 @@ export const profileAPI = {
     });
   },
   getPublicProfile: (userId: string) => api.get(`/profile/${userId}`),
+  changePassword: (data: Record<string, string>) => api.put('/profile/change-password', data),
 };
 
 // Orders API

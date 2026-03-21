@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +25,39 @@ public class UserProfileController {
 
     private final UserProfileService userProfileService;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> request) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            User user = userRepository.findByEmail(auth.getName())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            String currentPassword = request.get("currentPassword");
+            String newPassword = request.get("newPassword");
+
+            // Verify old password
+            if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+                throw new RuntimeException("Current password is incorrect");
+            }
+
+            // Save new password
+            user.setPasswordHash(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Password changed successfully");
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+    }
 
     @GetMapping
     public ResponseEntity<?> getProfile() {

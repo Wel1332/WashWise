@@ -20,7 +20,7 @@ export default function Login() {
     setError('');
 
     try {
-      const { data } = await authAPI.login(email, password);
+      const { data } = await authAPI.login({ email, password });
       const { id, email: userEmail, fullName, role, accessToken, refreshToken } = data.data;
       login({ id, email: userEmail, fullName, role }, accessToken, refreshToken);
       navigate('/dashboard');
