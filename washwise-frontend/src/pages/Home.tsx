@@ -1,9 +1,13 @@
-import { Link } from 'react-router-dom';
-import { Droplets, Package, Clock, CheckCircle, TrendingUp, Shield, Award, Users, Zap, Leaf, Menu, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { 
+  Droplets, Package, Clock, CheckCircle, TrendingUp, Shield, 
+  Award, Users, Zap, Leaf, Menu, X, Shirt, CheckCircle2, Sparkles 
+} from 'lucide-react';
 import { useState } from 'react';
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-white">
@@ -174,66 +178,160 @@ export default function Home() {
 
       {/* Services Section */}
       <section id="services" className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Services</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Choose from our range of professional laundry services with transparent pricing
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Professional laundry services tailored to your needs
             </p>
           </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Wash & Fold */}
-            <div className="bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-lg transition-all group">
-              <div className="bg-blue-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition-colors">
-                <Droplets className="text-blue-600 group-hover:text-white transition-colors" size={28} />
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            
+            {/* Wash Only */}
+            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border-2 border-transparent hover:border-cyan-500">
+              <div className="bg-cyan-100 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
+                <Droplets className="text-cyan-600" size={32} />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Wash & Fold</h3>
-              <p className="text-gray-600 text-sm mb-4">Professional washing and folding service</p>
-              <div className="text-3xl font-bold text-blue-600 mb-4">$12<span className="text-lg text-gray-500">/kg</span></div>
-              <Link to="/register" className="text-blue-600 font-semibold text-sm hover:text-blue-700 transition-colors inline-flex items-center gap-1">
-                Book now →
-              </Link>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Wash Only</h3>
+              <p className="text-gray-600 mb-4">Basic washing for everyday items</p>
+              <div className="space-y-2 mb-6">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-cyan-600">₱30</span>
+                  <span className="text-gray-500">/kg</span>
+                </div>
+                <p className="text-sm text-gray-500">Per Load (7-8kg): ₱150</p>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-2 text-gray-700">
+                  <CheckCircle2 className="text-green-500" size={20} />
+                  <span>Deep cleaning wash</span>
+                </li>
+                <li className="flex items-center gap-2 text-gray-700">
+                  <CheckCircle2 className="text-green-500" size={20} />
+                  <span>24-48 hour turnaround</span>
+                </li>
+                <li className="flex items-center gap-2 text-gray-700">
+                  <CheckCircle2 className="text-green-500" size={20} />
+                  <span>Eco-friendly detergent</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => navigate('/register')}
+                className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 rounded-xl font-semibold transition-all"
+              >
+                Book Now
+              </button>
             </div>
 
-            {/* Dry Clean */}
-            <div className="bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-lg transition-all group">
-              <div className="bg-purple-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-purple-600 transition-colors">
-                <Clock className="text-purple-600 group-hover:text-white transition-colors" size={28} />
+            {/* Wash-Dry-Fold */}
+            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border-2 border-transparent hover:border-blue-500">
+              <div className="bg-blue-100 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
+                <Shirt className="text-blue-600" size={32} />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Dry Clean</h3>
-              <p className="text-gray-600 text-sm mb-4">Specialized dry cleaning for delicate items</p>
-              <div className="text-3xl font-bold text-purple-600 mb-4">$8<span className="text-lg text-gray-500">/kg</span></div>
-              <Link to="/register" className="text-purple-600 font-semibold text-sm hover:text-purple-700 transition-colors inline-flex items-center gap-1">
-                Book now →
-              </Link>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Wash-Dry-Fold</h3>
+              <p className="text-gray-600 mb-4">Complete everyday laundry care</p>
+              <div className="space-y-2 mb-6">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-blue-600">₱40</span>
+                  <span className="text-gray-500">/kg</span>
+                </div>
+                <p className="text-sm text-gray-500">Per Load (7-8kg): ₱200</p>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-2 text-gray-700">
+                  <CheckCircle2 className="text-green-500" size={20} />
+                  <span>Wash, dry & fold</span>
+                </li>
+                <li className="flex items-center gap-2 text-gray-700">
+                  <CheckCircle2 className="text-green-500" size={20} />
+                  <span>2-3 days turnaround</span>
+                </li>
+                <li className="flex items-center gap-2 text-gray-700">
+                  <CheckCircle2 className="text-green-500" size={20} />
+                  <span>Ready for your closet</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => navigate('/register')}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition-all"
+              >
+                Book Now
+              </button>
             </div>
 
-            {/* Iron & Press */}
-            <div className="bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-lg transition-all group">
-              <div className="bg-green-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-green-600 transition-colors">
-                <CheckCircle className="text-green-600 group-hover:text-white transition-colors" size={28} />
+            {/* Dry Cleaning */}
+            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border-2 border-transparent hover:border-purple-500">
+              <div className="bg-purple-100 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
+                <Sparkles className="text-purple-600" size={32} />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Iron & Press</h3>
-              <p className="text-gray-600 text-sm mb-4">Expert ironing and pressing service</p>
-              <div className="text-3xl font-bold text-green-600 mb-4">$10<span className="text-lg text-gray-500">/kg</span></div>
-              <Link to="/register" className="text-green-600 font-semibold text-sm hover:text-green-700 transition-colors inline-flex items-center gap-1">
-                Book now →
-              </Link>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Dry Cleaning</h3>
+              <p className="text-gray-600 mb-4">Professional care for delicates</p>
+              <div className="space-y-2 mb-6">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-purple-600">₱150</span>
+                  <span className="text-gray-500">/item</span>
+                </div>
+                <p className="text-sm text-gray-500">Suits, dresses, coats</p>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-2 text-gray-700">
+                  <CheckCircle2 className="text-green-500" size={20} />
+                  <span>Delicate fabric care</span>
+                </li>
+                <li className="flex items-center gap-2 text-gray-700">
+                  <CheckCircle2 className="text-green-500" size={20} />
+                  <span>3-5 day service</span>
+                </li>
+                <li className="flex items-center gap-2 text-gray-700">
+                  <CheckCircle2 className="text-green-500" size={20} />
+                  <span>Professional pressing</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => navigate('/register')}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-semibold transition-all"
+              >
+                Book Now
+              </button>
             </div>
 
-            {/* Pickup & Delivery */}
-            <div className="bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-lg transition-all group">
-              <div className="bg-orange-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-orange-600 transition-colors">
-                <TrendingUp className="text-orange-600 group-hover:text-white transition-colors" size={28} />
+            {/* Premium Care */}
+            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border-2 border-transparent hover:border-orange-500">
+              <div className="bg-orange-100 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
+                <Package className="text-orange-600" size={32} />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Pickup & Delivery</h3>
-              <p className="text-gray-600 text-sm mb-4">Complete service with free delivery</p>
-              <div className="text-3xl font-bold text-orange-600 mb-4">$15<span className="text-lg text-gray-500">/kg</span></div>
-              <Link to="/register" className="text-orange-600 font-semibold text-sm hover:text-orange-700 transition-colors inline-flex items-center gap-1">
-                Book now →
-              </Link>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Premium Care</h3>
+              <p className="text-gray-600 mb-4">Special handling for luxury items</p>
+              <div className="space-y-2 mb-6">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-orange-600">₱175</span>
+                  <span className="text-gray-500">/item</span>
+                </div>
+                <p className="text-sm text-gray-500">Comforters, blankets, etc.</p>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-2 text-gray-700">
+                  <CheckCircle2 className="text-green-500" size={20} />
+                  <span>Luxury fabric care</span>
+                </li>
+                <li className="flex items-center gap-2 text-gray-700">
+                  <CheckCircle2 className="text-green-500" size={20} />
+                  <span>5-7 day service</span>
+                </li>
+                <li className="flex items-center gap-2 text-gray-700">
+                  <CheckCircle2 className="text-green-500" size={20} />
+                  <span>White glove service</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => navigate('/register')}
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-xl font-semibold transition-all"
+              >
+                Book Now
+              </button>
             </div>
+
           </div>
         </div>
       </section>
@@ -325,7 +423,7 @@ export default function Home() {
                 <Zap className="text-green-600" size={28} />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Fast Turnaround</h3>
-              <p className="text-gray-600">Quick processing with same-day or next-day delivery options</p>
+              <p className="text-gray-600">Quick processing with options to suit your schedule</p>
             </div>
 
             {/* Feature 4 */}
@@ -395,10 +493,10 @@ export default function Home() {
             <div>
               <h4 className="font-bold mb-4 text-sm uppercase tracking-wider text-gray-300">SERVICES</h4>
               <ul className="space-y-2 text-gray-400 text-sm">
-                <li><a href="#services" className="hover:text-white transition-colors">Wash & Fold</a></li>
+                <li><a href="#services" className="hover:text-white transition-colors">Wash Only</a></li>
+                <li><a href="#services" className="hover:text-white transition-colors">Wash-Dry-Fold</a></li>
                 <li><a href="#services" className="hover:text-white transition-colors">Dry Clean</a></li>
-                <li><a href="#services" className="hover:text-white transition-colors">Iron & Press</a></li>
-                <li><a href="#services" className="hover:text-white transition-colors">Pickup & Delivery</a></li>
+                <li><a href="#services" className="hover:text-white transition-colors">Premium Care</a></li>
               </ul>
             </div>
 
@@ -418,9 +516,9 @@ export default function Home() {
               <h4 className="font-bold mb-4 text-sm uppercase tracking-wider text-gray-300">CONTACT</h4>
               <ul className="space-y-2 text-gray-400 text-sm">
                 <li>support@washwise.com</li>
-                <li>+1 (555) 123-4567</li>
-                <li>123 Main Street</li>
-                <li>New York, NY 10001</li>
+                <li>+63 9667361445</li>
+                <li>DASUNA</li>
+                <li>Toledo City, Philippines</li>
               </ul>
             </div>
           </div>

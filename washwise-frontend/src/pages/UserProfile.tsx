@@ -10,7 +10,9 @@ import {
   LayoutDashboard,
   ShoppingCart,
   Package,
-  UserCircle
+  UserCircle,
+  AlertTriangle,
+  Shield // <-- Added Shield icon for the privacy modal
 } from "lucide-react";
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -39,6 +41,8 @@ export default function UserProfile() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false); // <-- Added state for Privacy Modal
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
@@ -77,13 +81,11 @@ export default function UserProfile() {
         confirmPassword: "",
       });
       
-      // UPDATED: Directly use the Base64 string from the database
       if (profileData.profileImageBase64) {
         setProfileImage(profileData.profileImageBase64);
       }
     } catch (err: any) {
       console.error('Error fetching profile:', err);
-      // Don't show error, just use default values
       setProfile({
         id: user?.id || '',
         fullName: user?.fullName || '',
@@ -104,8 +106,6 @@ export default function UserProfile() {
     try {
       const { data } = await profileAPI.uploadProfileImage(file);
       setProfile(data.data);
-      
-      // UPDATED: Directly use the Base64 string from the database
       if (data.data.profileImageBase64) {
         setProfileImage(data.data.profileImageBase64);
       }
@@ -158,7 +158,6 @@ export default function UserProfile() {
     }
     
     try {
-      // Call the backend API
       await profileAPI.changePassword({
         currentPassword: formData.currentPassword,
         newPassword: formData.newPassword
@@ -182,7 +181,44 @@ export default function UserProfile() {
     navigate('/login');
   };
 
-  // Use user from auth store as fallback
+  // Account Action Handlers
+  const handleDownloadData = () => {
+    if (!profile) return;
+    const dataStr = JSON.stringify(profile, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `washwise_data_${profile.fullName.replace(/\s+/g, '_')}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    setSuccess('Your data has been downloaded successfully.');
+    setTimeout(() => setSuccess(''), 3000);
+  };
+
+  // Updated to show custom modal instead of browser alert
+  const handlePrivacySettings = () => {
+    setShowPrivacyModal(true);
+  };
+
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteAccount = async () => {
+    try {
+      await profileAPI.deleteAccount();
+      logout();
+      navigate('/register');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to delete account. You may have active orders.');
+      setShowDeleteConfirm(false);
+    }
+  };
+
   const displayProfile = profile || {
     id: user?.id || '',
     fullName: user?.fullName || '',
@@ -194,7 +230,6 @@ export default function UserProfile() {
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
-        {/* Logo */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <div className="bg-blue-600 p-2 rounded-xl">
@@ -207,7 +242,6 @@ export default function UserProfile() {
           </div>
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 p-4">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
             MENU
@@ -246,12 +280,16 @@ export default function UserProfile() {
           </div>
         </nav>
 
-        {/* User Profile */}
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center overflow-hidden">
               {profileImage ? (
-                <img src={profileImage} alt="Profile" className="w-full h-full object-cover" onError={() => console.error("BROKEN IMAGE STRING:", profileImage)} />
+                <img 
+                  src={profileImage} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover" 
+                  onError={() => setProfileImage(null)} 
+                />
               ) : (
                 <UserIcon className="text-white" size={24} />
               )}
@@ -272,7 +310,7 @@ export default function UserProfile() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto relative">
         <div className="p-12">
           {/* Header */}
           <div className="mb-8">
@@ -302,7 +340,12 @@ export default function UserProfile() {
                 <div className="relative mb-6">
                   <div className="bg-gradient-to-b from-blue-600 to-blue-700 rounded-full shadow-lg w-32 h-32 flex items-center justify-center overflow-hidden">
                     {profileImage ? (
-                      <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                      <img 
+                        src={profileImage} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover" 
+                        onError={() => setProfileImage(null)} 
+                      />
                     ) : (
                       <UserIcon className="text-white" size={48} strokeWidth={1.5} />
                     )}
@@ -560,18 +603,85 @@ export default function UserProfile() {
           <div className="mt-6 bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Account Actions</h2>
             <div className="flex flex-wrap gap-3">
-              <button className="border border-gray-300 text-gray-700 rounded-xl px-6 py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors">
+              <button 
+                onClick={handleDownloadData}
+                className="border border-gray-300 text-gray-700 rounded-xl px-6 py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
                 Download My Data
               </button>
-              <button className="border border-gray-300 text-gray-700 rounded-xl px-6 py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors">
+              <button 
+                onClick={handlePrivacySettings}
+                className="border border-gray-300 text-gray-700 rounded-xl px-6 py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
                 Privacy Settings
               </button>
-              <button className="border border-red-600 text-red-600 rounded-xl px-6 py-2.5 text-sm font-medium hover:bg-red-50 transition-colors">
+              <button 
+                onClick={handleDeleteClick}
+                className="border border-red-600 text-red-600 rounded-xl px-6 py-2.5 text-sm font-medium hover:bg-red-50 transition-colors"
+              >
                 Delete Account
               </button>
             </div>
           </div>
         </div>
+
+        {/* Custom Privacy Settings Modal */}
+        {showPrivacyModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 animate-in fade-in zoom-in duration-200">
+              <div className="flex flex-col items-center text-center">
+                <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-5">
+                  <Shield className="text-blue-600" size={32} />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Privacy Settings</h3>
+                <p className="text-gray-600 mb-8 leading-relaxed">
+                  Your privacy is important to us. Currently, all WashWise profiles are strictly private and your data is securely encrypted. 
+                  <br /><br />
+                  For further data management requests, please contact <a href="mailto:support@washwise.com" className="text-blue-600 font-medium hover:underline">support@washwise.com</a>.
+                </p>
+                
+                <button
+                  onClick={() => setShowPrivacyModal(false)}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 rounded-xl transition-colors shadow-sm"
+                >
+                  Understood
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Custom Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in fade-in zoom-in duration-200">
+              <div className="flex flex-col items-center text-center">
+                <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                  <AlertTriangle className="text-red-600" size={32} />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Delete Account?</h3>
+                <p className="text-gray-600 mb-6">
+                  Are you absolutely sure you want to delete your account? This action <span className="font-bold text-gray-900">cannot be undone</span> and you will lose all your order history.
+                </p>
+                
+                <div className="flex gap-3 w-full">
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 font-semibold py-3 rounded-xl transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDeleteAccount}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition-colors shadow-sm"
+                  >
+                    Yes, Delete It
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

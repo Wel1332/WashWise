@@ -96,6 +96,7 @@ export const profileAPI = {
   },
   getPublicProfile: (userId: string) => api.get(`/profile/${userId}`),
   changePassword: (data: Record<string, string>) => api.put('/profile/change-password', data),
+  deleteAccount: () => api.delete('/profile/account'),
 };
 
 // Orders API

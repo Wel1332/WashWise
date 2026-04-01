@@ -9,6 +9,7 @@ import com.washwise.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -100,5 +101,19 @@ public class UserProfileService {
         UserProfile updatedProfile = userProfileRepository.save(profile);
 
         return mapToResponse(user, updatedProfile);
+    }
+
+    @Transactional
+    public void deleteUserAccount(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Delete the associated profile first
+        userProfileRepository.findByUser(user).ifPresent(profile -> {
+            userProfileRepository.delete(profile);
+        });
+
+        // Delete the user account
+        userRepository.delete(user);
     }
 }

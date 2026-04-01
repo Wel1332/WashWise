@@ -30,7 +30,6 @@ const statusConfig: Record<string, { label: string; color: string; bgColor: stri
 const getServiceStyle = (name: string) => {
   if (name?.includes('Wash')) return { color: "#007bff", bgColor: "#eff6ff" };
   if (name?.includes('Dry')) return { color: "#9810FA", bgColor: "#faf5ff" };
-  if (name?.includes('Iron')) return { color: "#00a63e", bgColor: "#f0fdf4" };
   return { color: "#FF6B35", bgColor: "#fff5f3" }; // Premium/Default
 };
 
