@@ -21,9 +21,22 @@ export default function Login() {
 
     try {
       const { data } = await authAPI.login({ email, password });
+      
+      // Extract role alongside the other user data
       const { id, email: userEmail, fullName, role, accessToken, refreshToken } = data.data;
+      
+      // Save user to global store
       login({ id, email: userEmail, fullName, role }, accessToken, refreshToken);
-      navigate('/dashboard');
+      
+      // Smart Routing based on the user's role!
+      if (role === 'ADMIN') {
+        navigate('/dashboard/admin');
+      } else if (role === 'STAFF') {
+        navigate('/dashboard/staff');
+      } else {
+        navigate('/dashboard'); // Default customer dashboard
+      }
+
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {

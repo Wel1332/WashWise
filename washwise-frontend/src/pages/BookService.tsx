@@ -129,7 +129,7 @@ export default function BookService() {
   const [error, setError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState<{ show: boolean; total: number; orderId: string } | null>(null);
 
-  const [bookedPickupSlots, setBookedPickupSlots] = useState<string[]>([]); 
+  const [bookedPickupSlots] = useState<string[]>([]); 
 
   // Calculate minimum days required for the selected service
   const minDeliveryDays = getMinDeliveryDays(selectedService);

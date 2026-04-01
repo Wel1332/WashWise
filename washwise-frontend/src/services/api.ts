@@ -129,4 +129,16 @@ export const reviewsAPI = {
     api.get(`/reviews/service/${serviceId}/rating`),
 };
 
+export const usersAPI = {
+  getAllUsers: () => api.get('/users'),
+  updateUserRole: (id: string, role: string) => api.put(`/users/${id}/role`, { role }),
+};
+
+export const servicesAPI = {
+  getAllServices: () => api.get('/services/active'),
+  createService: (data: Record<string, unknown>) => api.post('/services', data),
+  updateService: (id: string, data: Record<string, unknown>) => api.put(`/services/${id}`, data),
+  deleteService: (id: string) => api.delete(`/services/${id}`),
+};
+
 export default api;

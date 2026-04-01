@@ -7,9 +7,12 @@ import {
   TrendingUp,
   User,
   ArrowRight,
-  Filter
+  Filter,
+  CheckCircle2,
+  XCircle,
+  Droplets,
+  Wind
 } from 'lucide-react';
-import { useAuthStore } from '../store/authStore';
 import { ordersAPI } from '../services/api';
 import Sidebar from '../components/Sidebar';
 
@@ -59,7 +62,8 @@ export default function StaffDashboard() {
         WASHING: 0,
         DRYING: 0,
         READY: 0,
-        COMPLETED: 0
+        COMPLETED: 0,
+        CANCELLED: 0
       };
 
       allOrders.forEach((order: any) => {
@@ -107,9 +111,24 @@ export default function StaffDashboard() {
       WASHING: 'bg-purple-100 text-purple-700 border-purple-200',
       DRYING: 'bg-orange-100 text-orange-700 border-orange-200',
       READY: 'bg-green-100 text-green-700 border-green-200',
-      COMPLETED: 'bg-gray-100 text-gray-700 border-gray-200'
+      COMPLETED: 'bg-gray-100 text-gray-700 border-gray-200',
+      CANCELLED: 'bg-red-100 text-red-700 border-red-200'
     };
     return colors[status] || 'bg-gray-100 text-gray-700 border-gray-200';
+  };
+
+  // Maps statuses to Lucide React icons instead of Emojis
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'PENDING': return <Clock size={14} />;
+      case 'RECEIVED': return <Package size={14} />;
+      case 'WASHING': return <Droplets size={14} />;
+      case 'DRYING': return <Wind size={14} />;
+      case 'READY': return <CheckCircle2 size={14} />;
+      case 'COMPLETED': return <CheckCircle size={14} />;
+      case 'CANCELLED': return <XCircle size={14} />;
+      default: return <Package size={14} />;
+    }
   };
 
   const getActionButtonColor = (status: string) => {
@@ -287,6 +306,17 @@ export default function StaffDashboard() {
                 >
                   Completed ({filterCounts.COMPLETED || 0})
                 </button>
+
+                <button
+                  onClick={() => setActiveFilter('CANCELLED')}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                    activeFilter === 'CANCELLED'
+                      ? 'bg-red-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Cancelled ({filterCounts.CANCELLED || 0})
+                </button>
               </div>
             </div>
 
@@ -351,20 +381,18 @@ export default function StaffDashboard() {
 
                     {/* Status */}
                     <div>
-                      <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border ${getStatusColor(order.status)}`}>
-                        {order.status === 'COMPLETED' && <CheckCircle size={14} />}
-                        {order.status === 'WASHING' && '🔄'}
-                        {order.status === 'PENDING' && '⏱️'}
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${getStatusColor(order.status)}`}>
+                        {getStatusIcon(order.status)}
                         {order.status.charAt(0) + order.status.slice(1).toLowerCase()}
                       </span>
                     </div>
 
                     {/* Action */}
                     <div>
-                      {order.status === 'COMPLETED' ? (
-                        <span className="inline-flex items-center gap-1 text-green-600 font-medium text-sm">
-                          <CheckCircle size={16} />
-                          Done
+                      {order.status === 'COMPLETED' || order.status === 'CANCELLED' ? (
+                        <span className={`inline-flex items-center gap-1 font-medium text-sm ${order.status === 'COMPLETED' ? 'text-green-600' : 'text-red-600'}`}>
+                          {order.status === 'COMPLETED' ? <CheckCircle size={16} /> : <XCircle size={16} />}
+                          {order.status === 'COMPLETED' ? 'Done' : 'Cancelled'}
                         </span>
                       ) : (
                         <button
