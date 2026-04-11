@@ -301,7 +301,7 @@ export default function MyOrders() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-gray-900 text-xl mb-0.5">${parseFloat(order.totalPrice || 0).toFixed(2)}</p>
+                          <p className="font-bold text-gray-900 text-xl mb-0.5">₱{parseFloat(order.totalPrice || 0).toFixed(2)}</p>
                           <p className="text-gray-600 text-xs">{order.weightKg ? `${order.weightKg} kg` : 'Standard'}</p>
                         </div>
                       </div>

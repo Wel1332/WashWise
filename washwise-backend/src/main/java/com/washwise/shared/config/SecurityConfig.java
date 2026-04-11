@@ -19,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpMethod;
 
 import java.util.Arrays;
 
@@ -106,20 +107,20 @@ public class SecurityConfig {
                     .requestMatchers("/api/v1/auth/login").permitAll()
                     
                     // Public service endpoints (GET only)
-                    .requestMatchers("GET", "/api/v1/services").permitAll()
-                    .requestMatchers("GET", "/api/v1/services/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/services").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/services/**").permitAll()
                     
                     // Admin-only service endpoints
-                    .requestMatchers("POST", "/api/v1/services").hasRole("ADMIN")
-                    .requestMatchers("PUT", "/api/v1/services/**").hasRole("ADMIN")
-                    .requestMatchers("DELETE", "/api/v1/services/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/api/v1/services").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/api/v1/services/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.DELETE, "/api/v1/services/**").hasRole("ADMIN")
                     
                     // Order endpoints (authenticated users)
-                    .requestMatchers("GET", "/api/v1/orders").authenticated()
-                    .requestMatchers("GET", "/api/v1/orders/**").authenticated()
-                    .requestMatchers("POST", "/api/v1/orders").authenticated()
-                    .requestMatchers("PUT", "/api/v1/orders/**").authenticated()
-                    .requestMatchers("DELETE", "/api/v1/orders/**").authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/orders").authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/orders/**").authenticated()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/orders").authenticated()
+                    .requestMatchers(HttpMethod.PUT, "/api/v1/orders/**").authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/api/v1/orders/**").authenticated()
 
                     // Everything else requires auth
                     .anyRequest().authenticated()

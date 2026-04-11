@@ -206,7 +206,7 @@ export default function CustomerDashboard() {
                 </div>
                 <span className="text-xs font-medium text-gray-500 uppercase">Total Spent</span>
               </div>
-              <div className="text-4xl font-bold text-gray-900 mb-1">${formatPrice(stats.totalSpent)}</div>
+              <div className="text-4xl font-bold text-gray-900 mb-1">₱{formatPrice(stats.totalSpent)}</div>
               <p className="text-sm text-gray-600">Lifetime value</p>
             </div>
           </div>
@@ -268,7 +268,7 @@ export default function CustomerDashboard() {
                           <p className="text-sm text-gray-600 mb-2">{order.service?.name || 'Service'}</p>
                           <div className="flex items-center justify-between">
                             <p className="text-xs text-gray-500">{formatDate(order.createdAt)}</p>
-                            <p className="font-bold text-gray-900">${formatPrice(order.totalPrice)}</p>
+                            <p className="font-bold text-gray-900">₱{formatPrice(order.totalPrice)}</p>
                           </div>
                         </div>
                       ))}
@@ -325,7 +325,7 @@ export default function CustomerDashboard() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
                           <p className="font-bold text-gray-900 text-sm">WW-2026-{String(order.id).slice(0, 3)}</p>
-                          <p className="font-bold text-gray-900">${formatPrice(order.totalPrice)}</p>
+                          <p className="font-bold text-gray-900">₱{formatPrice(order.totalPrice)}</p>
                         </div>
                         <p className="text-sm text-gray-600 mb-1">{order.service?.name || 'Service'}</p>
                         <div className="flex items-center justify-between">
