@@ -19,7 +19,7 @@
         tools:targetApi="31">
 
         <activity
-            android:name=".ui.auth.LandingActivity"
+            android:name=".feature.auth.ui.LandingActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,11 +28,11 @@
         </activity>
 
         <activity
-            android:name=".ui.auth.LoginActivity"
+            android:name=".feature.auth.ui.LoginActivity"
             android:exported="false" />
 
         <activity
-            android:name=".ui.auth.RegisterActivity"
+            android:name=".feature.auth.ui.RegisterActivity"
             android:exported="false" />
 
         <activity
@@ -40,10 +40,15 @@
             android:exported="false" />
 
         <activity
-            android:name=".ui.profile.UpdateProfileActivity"
+            android:name=".feature.profile.ui.UpdateProfileActivity"
             android:exported="false" />
+
         <activity
-            android:name=".ui.profile.ChangePasswordActivity"
+            android:name=".feature.profile.ui.ChangePasswordActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".feature.order.ui.BookServiceActivity"
             android:exported="false" />
 
     </application>

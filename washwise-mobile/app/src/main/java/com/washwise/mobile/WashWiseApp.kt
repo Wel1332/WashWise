@@ -1,7 +1,7 @@
 package com.washwise.mobile
 
 import android.app.Application
-import com.washwise.mobile.utils.SharedPrefManager
+import com.washwise.mobile.shared.util.SharedPrefManager
 
 class WashWiseApp : Application() {
     override fun onCreate() {

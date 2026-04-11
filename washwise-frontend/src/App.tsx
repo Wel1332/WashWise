@@ -1,13 +1,13 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import AdminDashboard from './pages/AdminDashboard';
-import StaffDashboard from './pages/StaffDashboard';
-import CustomerDashboard from './pages/CustomerDashboard';
-import UserProfile from './pages/UserProfile';
-import BookService from './pages/BookService';
-import MyOrders from './pages/MyOrders';
+import Home from './features/home/pages/Home';
+import Login from './features/auth/pages/Login';
+import Register from './features/auth/pages/Register';
+import AdminDashboard from './features/dashboard/pages/AdminDashboard';
+import StaffDashboard from './features/dashboard/pages/StaffDashboard';
+import CustomerDashboard from './features/dashboard/pages/CustomerDashboard';
+import UserProfile from './features/profile/pages/UserProfile';
+import BookService from './features/order/pages/BookService';
+import MyOrders from './features/order/pages/MyOrders';
 
 function App() {
   return (
