@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="180dp"
         android:orientation="vertical"
-        android:background="#0056D2"
+        android:background="#2B7CFF"
         android:paddingHorizontal="24dp"
         android:paddingTop="16dp"
         android:paddingBottom="24dp"
@@ -50,7 +50,7 @@
             android:layout_height="wrap_content"
             android:text="Create account"
             android:textSize="28sp"
-            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium"
             android:textColor="@color/white"
             android:layout_marginBottom="4dp"/>
 
@@ -237,7 +237,7 @@
                     android:layout_height="24dp"
                     android:layout_gravity="center"
                     android:visibility="gone"
-                    android:indeterminateTint="#0056D2"
+                    android:indeterminateTint="#2B7CFF"
                     android:layout_marginBottom="16dp"/>
 
                 <com.google.android.material.button.MaterialButton
@@ -246,11 +246,11 @@
                     android:layout_height="56dp"
                     android:text="Create Account"
                     android:textSize="16sp"
-                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium"
                     android:textColor="@color/white"
                     android:textAllCaps="false"
                     app:cornerRadius="14dp"
-                    android:backgroundTint="#0056D2"
+                    android:backgroundTint="#2B7CFF"
                     app:elevation="0dp"
                     android:layout_marginBottom="24dp"/>
 
@@ -273,9 +273,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Sign in"
-                        android:textColor="#0056D2"
+                        android:textColor="#2B7CFF"
                         android:textSize="14sp"
-                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-medium"
                         android:clickable="true"
                         android:focusable="true"
                         android:background="?attr/selectableItemBackgroundBorderless"

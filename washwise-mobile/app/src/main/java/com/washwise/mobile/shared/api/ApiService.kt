@@ -47,6 +47,9 @@ interface ApiService {
     @POST("profile/change-password")
     suspend fun changePassword(@Body request: ChangePasswordRequest): Response<ApiResponse<Any>>
 
+    @DELETE("profile")
+    suspend fun deleteAccount(): Response<ApiResponse<Any>>
+
     // ==========================================
     // Orders
     // ==========================================

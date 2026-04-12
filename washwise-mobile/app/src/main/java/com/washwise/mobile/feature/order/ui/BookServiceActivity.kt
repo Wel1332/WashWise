@@ -2,8 +2,6 @@ package com.washwise.mobile.feature.order.ui
 
 import android.os.Bundle
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -17,21 +15,54 @@ import java.time.format.DateTimeFormatter
 
 class BookServiceActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBookServiceBinding
-    private var services: List<ServiceResponse> = emptyList()
     private var selectedService: ServiceResponse? = null
+    private var currentWeight = 2.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityBookServiceBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val serviceIdToFind = intent.getStringExtra("SERVICE_ID")
+
         binding.btnBack.setOnClickListener { finish() }
         binding.btnSubmit.setOnClickListener { submitOrder() }
 
-        loadServices()
+        setupWeightControls()
+
+        if (serviceIdToFind != null) {
+            loadSpecializedService(serviceIdToFind)
+        } else {
+            Toast.makeText(this, "No service selected", Toast.LENGTH_SHORT).show()
+            finish()
+        }
     }
 
-    private fun loadServices() {
+    private fun setupWeightControls() {
+        updateWeightDisplay()
+        binding.btnWeightMinus.setOnClickListener {
+            if (currentWeight > 1.0) {
+                currentWeight -= 0.5
+                updateWeightDisplay()
+            }
+        }
+        binding.btnWeightPlus.setOnClickListener {
+            if (currentWeight < 50.0) {
+                currentWeight += 0.5
+                updateWeightDisplay()
+            }
+        }
+    }
+
+    private fun updateWeightDisplay() {
+        binding.tvWeightValue.text = String.format("%.1f", currentWeight)
+        selectedService?.let {
+            val total = it.price * currentWeight
+            binding.tvServicePriceDisplay.text = "₱${String.format("%.2f", total)}"
+        }
+    }
+
+    private fun loadSpecializedService(serviceId: String) {
         binding.progressServices.visibility = View.VISIBLE
         binding.btnSubmit.isEnabled = false
 
@@ -39,43 +70,36 @@ class BookServiceActivity : AppCompatActivity() {
             try {
                 val response = RetrofitClient.instance.getActiveServices()
                 if (response.isSuccessful && response.body()?.success == true) {
-                    services = response.body()?.data ?: emptyList()
-                    setupServiceSpinner()
+                    val list = response.body()?.data ?: emptyList()
+                    selectedService = list.find { it.id == serviceId }
+                    if (selectedService != null) {
+                        displayService(selectedService!!)
+                    } else {
+                        Toast.makeText(this@BookServiceActivity, "Service not found", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
                 } else {
-                    Toast.makeText(this@BookServiceActivity, "Failed to load services", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@BookServiceActivity, "Failed to load service data", Toast.LENGTH_SHORT).show()
+                    finish()
                 }
             } catch (e: Exception) {
                 Toast.makeText(this@BookServiceActivity, "Network error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                finish()
             } finally {
                 binding.progressServices.visibility = View.GONE
             }
         }
     }
 
-    private fun setupServiceSpinner() {
-        val serviceNames = services.map { "${it.name} — ₱${String.format("%.2f", it.price)}" }
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, serviceNames)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerService.adapter = adapter
-
-        binding.spinnerService.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                selectedService = services[position]
-                binding.tvServicePrice.text = "Price: ₱${String.format("%.2f", selectedService!!.price)}"
-                binding.btnSubmit.isEnabled = true
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                selectedService = null
-                binding.btnSubmit.isEnabled = false
-            }
-        }
+    private fun displayService(service: ServiceResponse) {
+        binding.tvServiceNameDisplay.text = service.name
+        binding.tvServiceDescDisplay.text = service.description ?: "Professional care."
+        updateWeightDisplay()
+        binding.btnSubmit.isEnabled = true
     }
 
     private fun submitOrder() {
-        val service = selectedService ?: run {
-            Toast.makeText(this, "Please select a service", Toast.LENGTH_SHORT).show()
-            return
-        }
+        val service = selectedService ?: return
 
         val location = binding.etLocation.text.toString().trim()
         if (location.isEmpty()) {
@@ -87,17 +111,19 @@ class BookServiceActivity : AppCompatActivity() {
         val scheduledDate = if (dateStr.isNotEmpty()) {
             "${dateStr}T09:00:00"
         } else {
+             // Fallback default
             LocalDateTime.now().plusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
         }
-
-        val notes = binding.etNotes.text.toString().trim().ifEmpty { null }
+        
+        // Pass the weight info inside the notes so the UI flow doesn't lose it since the API doesn't have a weight parameter right now.
+        val notesStr = "Weight: $currentWeight kg"
 
         val request = CreateOrderRequest(
             serviceId = service.id,
-            totalPrice = service.price,
+            totalPrice = service.price * currentWeight,
             location = location,
             scheduledDate = scheduledDate,
-            notes = notes
+            notes = notesStr
         )
 
         binding.btnSubmit.isEnabled = false

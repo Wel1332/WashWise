@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,7 +16,8 @@ import kotlinx.coroutines.launch
 class OrdersFragment : Fragment() {
     private var _binding: FragmentOrdersBinding? = null
     private val binding get() = _binding!!
-    private lateinit var adapter: OrderAdapter
+    private lateinit var activeAdapter: OrderAdapter
+    private lateinit var completedAdapter: OrderAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentOrdersBinding.inflate(inflater, container, false)
@@ -26,15 +26,24 @@ class OrdersFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupRecyclerView()
+        setupRecyclerViews()
         binding.btnRetry.setOnClickListener { fetchOrders() }
         fetchOrders()
     }
 
-    private fun setupRecyclerView() {
-        adapter = OrderAdapter { order -> showCancelDialog(order) }
-        binding.rvOrders.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvOrders.adapter = adapter
+    private fun setupRecyclerViews() {
+        val onOrderClick = { order: OrderResponse ->
+            // For now, simple toast. Could launch OrderTrackingActivity
+            Toast.makeText(requireContext(), "Order Tracking: ${order.id}", Toast.LENGTH_SHORT).show()
+        }
+        
+        activeAdapter = OrderAdapter(onOrderClick)
+        binding.rvActiveOrders.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvActiveOrders.adapter = activeAdapter
+
+        completedAdapter = OrderAdapter(onOrderClick)
+        binding.rvCompletedOrders.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvCompletedOrders.adapter = completedAdapter
     }
 
     private fun fetchOrders() {
@@ -50,70 +59,53 @@ class OrdersFragment : Fragment() {
                         showOrders(orders)
                     }
                 } else {
-                    showError("Failed to load orders")
+                    showError("Failed to load active orders")
                 }
             } catch (e: Exception) {
-                showError("Network error: ${e.localizedMessage}")
-            }
-        }
-    }
-
-    private fun showCancelDialog(order: OrderResponse) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Cancel Order")
-            .setMessage("Are you sure you want to cancel this order?")
-            .setPositiveButton("Yes, Cancel") { _, _ -> cancelOrder(order) }
-            .setNegativeButton("No", null)
-            .show()
-    }
-
-    private fun cancelOrder(order: OrderResponse) {
-        lifecycleScope.launch {
-            try {
-                val response = RetrofitClient.instance.cancelOrder(order.id)
-                if (response.isSuccessful) {
-                    Toast.makeText(context, "Order cancelled", Toast.LENGTH_SHORT).show()
-                    fetchOrders() // Refresh list
-                } else {
-                    Toast.makeText(context, "Failed to cancel order", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(context, "Network error", Toast.LENGTH_SHORT).show()
+                showError(e.message ?: "Network error occurred")
             }
         }
     }
 
     private fun showLoading() {
         binding.progressBar.visibility = View.VISIBLE
-        binding.rvOrders.visibility = View.GONE
+        binding.contentState.visibility = View.GONE
         binding.emptyState.visibility = View.GONE
         binding.errorState.visibility = View.GONE
     }
 
     private fun showOrders(orders: List<OrderResponse>) {
         binding.progressBar.visibility = View.GONE
-        binding.rvOrders.visibility = View.VISIBLE
+        binding.contentState.visibility = View.VISIBLE
         binding.emptyState.visibility = View.GONE
         binding.errorState.visibility = View.GONE
-        binding.tvOrderCount.text = "${orders.size} order(s)"
-        adapter.submitList(orders)
+
+        val activeOrders = orders.filter { it.status.uppercase() != "COMPLETED" && it.status.uppercase() != "CANCELLED" }
+        val completedOrders = orders.filter { it.status.uppercase() == "COMPLETED" || it.status.uppercase() == "CANCELLED" }
+
+        binding.tvActiveOrdersHeader.text = "ACTIVE ORDERS (${activeOrders.size})"
+        binding.tvCompletedOrdersHeader.text = "COMPLETED (${completedOrders.size})"
+
+        binding.llActiveSection.visibility = if (activeOrders.isNotEmpty()) View.VISIBLE else View.GONE
+        binding.llCompletedSection.visibility = if (completedOrders.isNotEmpty()) View.VISIBLE else View.GONE
+
+        activeAdapter.submitList(activeOrders)
+        completedAdapter.submitList(completedOrders)
     }
 
     private fun showEmpty() {
         binding.progressBar.visibility = View.GONE
-        binding.rvOrders.visibility = View.GONE
+        binding.contentState.visibility = View.GONE
         binding.emptyState.visibility = View.VISIBLE
         binding.errorState.visibility = View.GONE
-        binding.tvOrderCount.text = "0 orders"
     }
 
     private fun showError(msg: String) {
         binding.progressBar.visibility = View.GONE
-        binding.rvOrders.visibility = View.GONE
+        binding.contentState.visibility = View.GONE
         binding.emptyState.visibility = View.GONE
         binding.errorState.visibility = View.VISIBLE
         binding.tvError.text = msg
-        binding.tvOrderCount.text = "Error"
     }
 
     override fun onDestroyView() {

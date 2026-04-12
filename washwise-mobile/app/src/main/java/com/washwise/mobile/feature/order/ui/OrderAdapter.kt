@@ -3,7 +3,6 @@ package com.washwise.mobile.feature.order.ui
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -12,7 +11,7 @@ import com.washwise.mobile.databinding.ItemOrderBinding
 import com.washwise.mobile.feature.order.data.OrderResponse
 
 class OrderAdapter(
-    private val onCancelClick: (OrderResponse) -> Unit
+    private val onOrderClick: (OrderResponse) -> Unit
 ) : ListAdapter<OrderResponse, OrderAdapter.OrderViewHolder>(OrderDiffCallback()) {
 
     inner class OrderViewHolder(
@@ -20,13 +19,21 @@ class OrderAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(order: OrderResponse) {
-            binding.tvServiceName.text = order.service?.name ?: "Unknown Service"
-            binding.tvLocation.text = order.location ?: "—"
-            binding.tvDate.text = formatDate(order.scheduledDate)
-            binding.tvPrice.text = "₱${String.format("%.2f", order.totalPrice)}"
+            // Setup Order ID (mocked format WW-2026-XX like mockup)
+            val mockId = order.id.takeLast(2).padStart(2, '0').uppercase()
+            binding.tvOrderId.text = "WW-2026-$mockId"
+            
+            // Subtitle
+            val serviceName = order.service?.name ?: "Service"
+            // For mockup matching, just displaying a generic weight if not provided
+            binding.tvServiceSub.text = "$serviceName · 5 kg"
+            
+            binding.tvPrice.text = "$${String.format("%.0f", order.totalPrice)}"
 
-            // Status badge
-            binding.tvStatus.text = order.status.uppercase()
+            // Status badge styling
+            val status = order.status.lowercase().replaceFirstChar { it.uppercase() }
+            binding.tvStatus.text = status
+            
             val (bgColor, textColor) = getStatusColors(order.status)
             val badgeBg = binding.tvStatus.background as? GradientDrawable
                 ?: GradientDrawable().apply {
@@ -35,31 +42,33 @@ class OrderAdapter(
                 }
             badgeBg.setColor(bgColor)
             binding.tvStatus.setTextColor(textColor)
-
-            // Show cancel button only for PENDING orders
-            if (order.status.equals("PENDING", ignoreCase = true)) {
-                binding.btnCancel.visibility = View.VISIBLE
-                binding.btnCancel.setOnClickListener { onCancelClick(order) }
-            } else {
-                binding.btnCancel.visibility = View.GONE
+            
+            // Set dynamic colors based on service name
+            val iconTint: String
+            val iconBg: String
+            when (serviceName.lowercase()) {
+                "wash & fold" -> { iconTint = "#2B7CFF"; iconBg = "#EAF2FF" }
+                "dry clean" -> { iconTint = "#A855F7"; iconBg = "#F3E8FF" }
+                "ironing" -> { iconTint = "#F97316"; iconBg = "#FFEDD5" }
+                "premium care" -> { iconTint = "#22C55E"; iconBg = "#DCFCE7" }
+                "express wash" -> { iconTint = "#14B8A6"; iconBg = "#CCFBF1" }
+                "delivery" -> { iconTint = "#EC4899"; iconBg = "#FCE7F3" }
+                else -> { iconTint = "#6C757D"; iconBg = "#F8F9FA" }
             }
-        }
+            binding.ivServiceIcon.setColorFilter(Color.parseColor(iconTint))
+            binding.flIconContainer.background.setTint(Color.parseColor(iconBg))
 
-        private fun formatDate(dateStr: String?): String {
-            if (dateStr.isNullOrEmpty()) return "—"
-            // Take just the date part if it's a datetime string
-            return dateStr.take(10)
+            binding.root.setOnClickListener { onOrderClick(order) }
         }
 
         private fun getStatusColors(status: String): Pair<Int, Int> {
             return when (status.uppercase()) {
-                "PENDING" -> Pair(Color.parseColor("#FFF3E0"), Color.parseColor("#E65100"))
-                "CONFIRMED" -> Pair(Color.parseColor("#E3F2FD"), Color.parseColor("#1565C0"))
-                "IN_PROGRESS", "PROCESSING" -> Pair(Color.parseColor("#E8F5E9"), Color.parseColor("#2E7D32"))
-                "COMPLETED" -> Pair(Color.parseColor("#E8F5E9"), Color.parseColor("#1B5E20"))
-                "CANCELLED" -> Pair(Color.parseColor("#FFEBEE"), Color.parseColor("#C62828"))
-                "PICKED_UP" -> Pair(Color.parseColor("#F3E5F5"), Color.parseColor("#6A1B9A"))
-                else -> Pair(Color.parseColor("#F5F5F5"), Color.parseColor("#616161"))
+                "PENDING" -> Pair(Color.parseColor("#FFF8E1"), Color.parseColor("#F59E0B"))
+                "WASHING", "IN_PROGRESS", "PROCESSING" -> Pair(Color.parseColor("#F3E8FF"), Color.parseColor("#A855F7"))
+                "COMPLETED" -> Pair(Color.parseColor("#F1F5F9"), Color.parseColor("#475569"))
+                "CANCELLED" -> Pair(Color.parseColor("#FEF2F2"), Color.parseColor("#EF4444"))
+                "PICKED_UP" -> Pair(Color.parseColor("#EFF6FF"), Color.parseColor("#3B82F6"))
+                else -> Pair(Color.parseColor("#F1F5F9"), Color.parseColor("#475569"))
             }
         }
     }
