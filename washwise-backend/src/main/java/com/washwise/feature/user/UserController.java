@@ -1,6 +1,5 @@
 package com.washwise.feature.user;
 
-import com.washwise.feature.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

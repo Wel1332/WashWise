@@ -6,7 +6,6 @@ import com.washwise.feature.auth.dto.RegisterRequest;
 import com.washwise.shared.dto.ApiResponse;
 import com.washwise.feature.auth.dto.AuthResponse;
 import com.washwise.feature.auth.dto.TokenResponse;
-import com.washwise.feature.auth.AuthService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

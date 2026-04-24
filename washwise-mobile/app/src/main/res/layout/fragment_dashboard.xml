@@ -1,116 +1,586 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#F3F4F6">
+    android:background="#F3F4F6"
+    android:fillViewport="true">
 
-    <!-- Top App Bar equivalent section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        android:paddingTop="32dp"
-        android:paddingBottom="16dp">
-        
-        <ImageView
-            android:id="@+id/ivBack"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@android:drawable/ic_menu_revert"
-            android:background="@drawable/bg_circle_light"
-            android:padding="8dp"
-            android:layout_marginBottom="16dp"
-            app:tint="#212529"
-            android:visibility="gone"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Choose a service"
-            android:textSize="14sp"
-            android:textColor="#6C757D"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="What do you need?"
-            android:textSize="28sp"
-            android:fontFamily="sans-serif-medium"
-            android:textColor="#111827"
-            android:layout_marginTop="4dp"/>
-    </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#F0F0F0" />
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
         android:paddingBottom="24dp">
 
+        <!-- Greeting + bell -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp">
+            android:background="@color/white"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvGreeting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#6B7280"
+                    android:textSize="14sp"
+                    tools:text="Good evening" />
+
+                <TextView
+                    android:id="@+id/tvUserName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="#111827"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    tools:text="Hi, Alex! 👋" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:id="@+id/flNotification"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_circle_grey"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_bell"
+                    app:tint="#111827" />
+
+                <View
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:layout_gravity="top|end"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/bg_notification_dot" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <!-- Search bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:orientation="horizontal"
+            android:paddingHorizontal="20dp"
+            android:paddingBottom="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:background="@drawable/bg_search"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_search" />
+
+                <EditText
+                    android:id="@+id/etSearch"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@null"
+                    android:hint="Search laundry services..."
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="0dp"
+                    android:textColor="#111827"
+                    android:textColorHint="#9CA3AF"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Quick Book promo card -->
+        <FrameLayout
+            android:id="@+id/flPromo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_promo_blue"
+            android:clickable="true"
+            android:focusable="true">
+
+            <!-- Decorative circles -->
+            <View
+                android:layout_width="140dp"
+                android:layout_height="140dp"
+                android:layout_gravity="end|top"
+                android:layout_marginTop="-40dp"
+                android:layout_marginEnd="-40dp"
+                android:background="@drawable/bg_promo_circle" />
+
+            <View
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:layout_gravity="end|bottom"
+                android:layout_marginBottom="-30dp"
+                android:layout_marginEnd="20dp"
+                android:background="@drawable/bg_promo_circle" />
+
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="20dp"
+                android:src="@drawable/ic_tshirt_outline" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.12"
+                    android:text="LAUNDRY SERVICE"
+                    android:textColor="#BFDBFE"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Book your laundry\nin 60 seconds."
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:lineSpacingExtra="2dp" />
+
+                <LinearLayout
+                    android:id="@+id/btnQuickBook"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_quick_book_btn"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="18dp"
+                    android:paddingVertical="12dp">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_calendar_plus" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="Quick Book"
+                        android:textColor="#1D4ED8"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+        </FrameLayout>
+
+        <!-- Active Order -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="24dp"
+            android:letterSpacing="0.1"
+            android:text="ACTIVE ORDER"
+            android:textColor="#6B7280"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:id="@+id/llActiveOrder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_card_white"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="14dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <FrameLayout
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_service_icon">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_box" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvActiveOrderId"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="#111827"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    tools:text="WW-2026-001" />
+
+                <TextView
+                    android:id="@+id/tvActiveOrderService"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="#6B7280"
+                    android:textSize="13sp"
+                    tools:text="Wash &amp; Fold" />
+            </LinearLayout>
 
             <TextView
+                android:id="@+id/tvActiveOrderStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="All Services"
-                android:textColor="#212529"
-                android:textSize="20sp"
+                android:background="@drawable/bg_badge_blue"
+                android:fontFamily="sans-serif-medium"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:textColor="#1D4ED8"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                tools:text="Washing" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="6dp"
+                android:src="@drawable/ic_chevron_right" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvNoActiveOrder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_card_white"
+            android:padding="18dp"
+            android:text="No active orders right now."
+            android:textColor="#6B7280"
+            android:textSize="14sp"
+            android:visibility="gone" />
+
+        <!-- Special Offers header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="28dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="sans-serif-medium"
+                android:text="Special Offers"
+                android:textColor="#111827"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/tvOffersSeeAll"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="16dp"
-                android:text="Weight-based pricing · Minimum 1 kg"
-                android:textColor="#6C757D"
-                android:textSize="14sp" />
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="sans-serif-medium"
+                android:text="See all →"
+                android:textColor="#2563EB"
+                android:textSize="13sp" />
+        </LinearLayout>
 
-            <ProgressBar
-                android:id="@+id/progressBar"
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:scrollbars="none">
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="32dp"
-                android:visibility="gone" />
+                android:orientation="horizontal">
+
+                <!-- Blue Offer -->
+                <FrameLayout
+                    android:id="@+id/offerCard1"
+                    android:layout_width="150dp"
+                    android:layout_height="160dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/bg_offer_blue"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:layout_gravity="bottom|end"
+                        android:layout_marginEnd="-16dp"
+                        android:layout_marginBottom="-10dp"
+                        android:alpha="0.28"
+                        android:src="@drawable/ic_tshirt_outline" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_offer_pill"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="4dp"
+                            android:text="-20% OFF"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:fontFamily="sans-serif-medium"
+                            android:text="First\nOrder"
+                            android:textColor="#FFFFFF"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="New customers"
+                            android:textColor="#E0E7FF"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </FrameLayout>
+
+                <!-- Purple Offer -->
+                <FrameLayout
+                    android:id="@+id/offerCard2"
+                    android:layout_width="150dp"
+                    android:layout_height="160dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/bg_offer_purple"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:layout_gravity="bottom|end"
+                        android:layout_marginEnd="-16dp"
+                        android:layout_marginBottom="-10dp"
+                        android:alpha="0.28"
+                        android:src="@drawable/ic_tshirt_outline" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_offer_pill"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="4dp"
+                            android:text="FREE"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:fontFamily="sans-serif-medium"
+                            android:text="Weekend\nDelivery"
+                            android:textColor="#FFFFFF"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="Orders ₱500+"
+                            android:textColor="#EDE9FE"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </FrameLayout>
+
+                <!-- Teal Offer -->
+                <FrameLayout
+                    android:id="@+id/offerCard3"
+                    android:layout_width="150dp"
+                    android:layout_height="160dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/bg_offer_teal"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:layout_gravity="bottom|end"
+                        android:layout_marginEnd="-16dp"
+                        android:layout_marginBottom="-10dp"
+                        android:alpha="0.28"
+                        android:src="@drawable/ic_tshirt_outline" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_offer_pill"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="4dp"
+                            android:text="SAVE 15%"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:fontFamily="sans-serif-medium"
+                            android:text="Eco\nWash"
+                            android:textColor="#FFFFFF"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="Green option"
+                            android:textColor="#CCFBF1"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </FrameLayout>
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <!-- Our Services header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="24dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/tvEmptyState"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="48dp"
-                android:text="No services available."
-                android:textAlignment="center"
-                android:textColor="#6C757D"
-                android:visibility="gone" />
+                android:layout_weight="1"
+                android:fontFamily="sans-serif-medium"
+                android:text="Our Services"
+                android:textColor="#111827"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvServices"
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/tvServicesViewAll"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:clipToPadding="false"
-                android:layoutAnimation="@anim/layout_animation_slide_up"
-                android:nestedScrollingEnabled="false"
-                tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                tools:listitem="@layout/item_service"
-                tools:spanCount="2" />
-
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="sans-serif-medium"
+                android:text="View all →"
+                android:textColor="#2563EB"
+                android:textSize="13sp" />
         </LinearLayout>
-    </ScrollView>
 
-</LinearLayout>
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="24dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvEmptyState"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="No services available."
+            android:textAlignment="center"
+            android:textColor="#6B7280"
+            android:visibility="gone" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvServices"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="14dp"
+            android:layout_marginTop="10dp"
+            android:clipToPadding="false"
+            android:nestedScrollingEnabled="false"
+            tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            tools:listitem="@layout/item_service"
+            tools:spanCount="2" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

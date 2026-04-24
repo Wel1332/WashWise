@@ -4,7 +4,6 @@ import com.washwise.feature.user.dto.UserProfileRequest;
 import com.washwise.feature.user.dto.UserProfileResponse;
 import com.washwise.feature.user.entity.User;
 import com.washwise.feature.user.repository.UserRepository;
-import com.washwise.feature.user.UserProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

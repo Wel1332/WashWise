@@ -3,7 +3,6 @@ package com.washwise.feature.order;
 import com.washwise.feature.order.dto.CreateOrderRequest;
 import com.washwise.feature.order.dto.UpdateOrderRequest;
 import com.washwise.feature.order.dto.OrderResponse;
-import com.washwise.feature.order.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

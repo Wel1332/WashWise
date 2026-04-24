@@ -1,6 +1,5 @@
 package com.washwise.shared.security;
 
-import com.washwise.shared.security.JwtService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

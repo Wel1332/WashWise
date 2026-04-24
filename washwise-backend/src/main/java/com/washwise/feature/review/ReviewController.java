@@ -2,7 +2,6 @@ package com.washwise.feature.review;
 
 import com.washwise.feature.review.dto.ReviewRequest;
 import com.washwise.feature.review.dto.ReviewResponse;
-import com.washwise.feature.review.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

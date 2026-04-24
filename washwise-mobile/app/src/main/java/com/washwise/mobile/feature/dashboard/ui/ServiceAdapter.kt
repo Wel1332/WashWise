@@ -1,18 +1,25 @@
 package com.washwise.mobile.feature.dashboard.ui
 
-import android.content.Intent
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.washwise.mobile.R
 import com.washwise.mobile.databinding.ItemServiceBinding
-import com.washwise.mobile.feature.service.data.ServiceResponse
-import java.util.Locale
 
-class ServiceAdapter(private val onServiceClick: (ServiceResponse) -> Unit) :
-    ListAdapter<ServiceResponse, ServiceAdapter.ServiceViewHolder>(ServiceDiffCallback()) {
+data class DashboardService(
+    val backendId: String?,
+    val name: String,
+    val caption: String,
+    val iconRes: Int,
+    val iconTint: String,
+    val bgTint: String
+)
+
+class ServiceAdapter(private val onServiceClick: (DashboardService) -> Unit) :
+    ListAdapter<DashboardService, ServiceAdapter.ServiceViewHolder>(ServiceDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ServiceViewHolder {
         val binding = ItemServiceBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -23,63 +30,23 @@ class ServiceAdapter(private val onServiceClick: (ServiceResponse) -> Unit) :
         holder.bind(getItem(position))
     }
 
-    inner class ServiceViewHolder(private val binding: ItemServiceBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(service: ServiceResponse) {
+    inner class ServiceViewHolder(private val binding: ItemServiceBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(service: DashboardService) {
             binding.tvServiceName.text = service.name
-            binding.tvServiceDesc.text = service.description ?: "High quality service"
-            binding.tvServicePrice.text = String.format(Locale.US, "$%.0f/kg", service.price)
-            
-            // Set dynamic colors based on service name as per UI
-            val iconTint: String
-            val bgTint: String
-            when (service.name.lowercase()) {
-                "wash & fold" -> {
-                    iconTint = "#2B7CFF"
-                    bgTint = "#EAF2FF"
-                }
-                "dry clean" -> {
-                    iconTint = "#A855F7"
-                    bgTint = "#F3E8FF"
-                }
-                "ironing" -> {
-                    iconTint = "#F97316"
-                    bgTint = "#FFEDD5"
-                }
-                "premium care" -> {
-                    iconTint = "#22C55E"
-                    bgTint = "#DCFCE7"
-                }
-                "express wash" -> {
-                    iconTint = "#14B8A6"
-                    bgTint = "#CCFBF1"
-                }
-                "delivery" -> {
-                    iconTint = "#EC4899"
-                    bgTint = "#FCE7F3"
-                }
-                else -> {
-                    iconTint = "#2B7CFF"
-                    bgTint = "#EAF2FF"
-                }
-            }
-            binding.ivServiceIcon.setColorFilter(Color.parseColor(iconTint))
-            // We use a Drawable background for flIconContainer, so we tint it
-            binding.flIconContainer.background.setTint(Color.parseColor(bgTint))
-            binding.tvServicePrice.setTextColor(Color.parseColor(iconTint))
-
-            binding.root.setOnClickListener {
-                onServiceClick(service)
-            }
+            binding.tvServicePrice.text = service.caption
+            binding.ivServiceIcon.setImageResource(service.iconRes)
+            binding.ivServiceIcon.setColorFilter(Color.parseColor(service.iconTint))
+            binding.flIconContainer.background.setTint(Color.parseColor(service.bgTint))
+            binding.root.setOnClickListener { onServiceClick(service) }
         }
     }
 
-    class ServiceDiffCallback : DiffUtil.ItemCallback<ServiceResponse>() {
-        override fun areItemsTheSame(oldItem: ServiceResponse, newItem: ServiceResponse): Boolean {
-            return oldItem.id == newItem.id
-        }
+    class ServiceDiffCallback : DiffUtil.ItemCallback<DashboardService>() {
+        override fun areItemsTheSame(oldItem: DashboardService, newItem: DashboardService): Boolean =
+            oldItem.name == newItem.name
 
-        override fun areContentsTheSame(oldItem: ServiceResponse, newItem: ServiceResponse): Boolean {
-            return oldItem == newItem
-        }
+        override fun areContentsTheSame(oldItem: DashboardService, newItem: DashboardService): Boolean =
+            oldItem == newItem
     }
 }

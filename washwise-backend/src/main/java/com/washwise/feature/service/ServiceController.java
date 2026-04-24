@@ -5,7 +5,6 @@ import com.washwise.feature.service.dto.UpdateServiceRequest;
 import com.washwise.shared.dto.ApiResponse;
 import com.washwise.shared.dto.PageResponse;
 import com.washwise.feature.service.dto.ServiceResponse;
-import com.washwise.feature.service.ServiceService;
 
 import com.washwise.feature.service.entity.ServiceEntity; 
 import com.washwise.feature.service.repository.ServiceRepository;

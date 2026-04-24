@@ -5,11 +5,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="24dp"
-    android:layout_marginVertical="12dp"
-    app:cardCornerRadius="24dp"
-    app:cardElevation="6dp"
-    app:strokeWidth="0dp"
+    android:layout_margin="6dp"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="#E5E7EB"
     android:foreground="?attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true"
@@ -18,73 +18,47 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="20dp"
-        android:gravity="center_vertical">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <!-- Huge Icon Container -->
         <FrameLayout
             android:id="@+id/flIconContainer"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:background="@drawable/bg_service_icon">
-            
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_service_icon_circle">
+
             <ImageView
                 android:id="@+id/ivServiceIcon"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
                 android:layout_gravity="center"
-                android:src="@android:drawable/ic_menu_agenda"
-                app:tint="#2B7CFF" />
+                android:src="@drawable/ic_droplet"
+                app:tint="#2563EB" />
         </FrameLayout>
 
-        <!-- Huge Service Details -->
-        <LinearLayout
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/tvServiceName"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="20dp">
+            android:layout_marginTop="16dp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#111827"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:text="Wash &amp; Fold" />
 
-            <TextView
-                android:id="@+id/tvServiceName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                tools:text="Wash &amp; Fold"
-                android:textSize="20sp"
-                android:fontFamily="sans-serif-medium"
-                android:textColor="#111827" />
-
-            <TextView
-                android:id="@+id/tvServiceDesc"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                tools:text="Professional washing &amp; neat folding"
-                android:textSize="16sp"
-                android:textColor="#6C757D"
-                android:maxLines="2"
-                android:ellipsize="end" />
-
-            <TextView
-                android:id="@+id/tvServicePrice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                tools:text="$12/kg"
-                android:textSize="18sp"
-                android:fontFamily="sans-serif-medium"
-                android:textColor="#2B7CFF" />
-        </LinearLayout>
-
-        <!-- Huge Chevron -->
-        <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@android:drawable/ic_media_next"
-            app:tint="#CED4DA"
-            android:layout_marginStart="8dp"/>
-
+        <TextView
+            android:id="@+id/tvServicePrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="#6B7280"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:text="From $2.50/lb" />
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>
