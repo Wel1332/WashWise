@@ -7,116 +7,98 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import com.washwise.mobile.shared.api.RetrofitClient
 import com.washwise.mobile.databinding.FragmentProfileBinding
 import com.washwise.mobile.feature.auth.ui.LoginActivity
+import com.washwise.mobile.feature.profile.data.UserResponse
+import com.washwise.mobile.feature.profile.presenter.ProfileContract
+import com.washwise.mobile.feature.profile.presenter.ProfilePresenter
 import com.washwise.mobile.shared.util.SharedPrefManager
-import kotlinx.coroutines.launch
 
-class ProfileFragment : Fragment() {
+/**
+ * View role for the Profile tab. Delegates to [ProfilePresenter].
+ */
+class ProfileFragment : Fragment(), ProfileContract.View {
+
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
+    private val presenter: ProfileContract.Presenter = ProfilePresenter()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupListeners()
+        bindListeners()
+        presenter.attach(this)
     }
 
     override fun onResume() {
         super.onResume()
-        fetchProfile() // Refresh data when returning from edit screen
-    }
-
-    private fun fetchProfile() {
-        binding.progressBar.visibility = View.VISIBLE
-        lifecycleScope.launch {
-            try {
-                val response = RetrofitClient.instance.getProfile()
-                if (response.isSuccessful && response.body()?.success == true) {
-                    val profile = response.body()?.data
-                    binding.tvName.text = profile?.fullName ?: "N/A"
-                    binding.tvEmail.text = profile?.email ?: "N/A"
-                    
-                    val phoneStr = profile?.phoneNumber
-                    binding.tvPhone.text = if (phoneStr.isNullOrEmpty()) "Not set" else phoneStr
-                    
-                    val addressStr = profile?.address
-                    binding.tvAddress.text = if (addressStr.isNullOrEmpty()) "Not set" else addressStr
-                }
-            } catch (e: Exception) {
-                Toast.makeText(context, "Failed to load profile", Toast.LENGTH_SHORT).show()
-            } finally {
-                binding.progressBar.visibility = View.GONE
-            }
-        }
-    }
-
-    private fun setupListeners() {
-        binding.btnEditProfile.setOnClickListener {
-            startActivity(Intent(requireContext(), UpdateProfileActivity::class.java))
-        }
-        binding.btnChangePassword.setOnClickListener {
-            startActivity(Intent(requireContext(), ChangePasswordActivity::class.java))
-        }
-        
-        binding.btnDownloadData?.setOnClickListener {
-            Toast.makeText(context, "A copy of your data will be sent to your email later.", Toast.LENGTH_LONG).show()
-        }
-
-        binding.btnPrivacySettings?.setOnClickListener {
-            android.app.AlertDialog.Builder(requireContext())
-                .setTitle("Privacy Settings")
-                .setMessage("Your profile is completely private and only shared with verified washing partners fulfilling your orders. You can opt out of promotional emails by contacting support.")
-                .setPositiveButton("Got it", null)
-                .show()
-        }
-
-        binding.btnDeleteAccount?.setOnClickListener {
-            android.app.AlertDialog.Builder(requireContext())
-                .setTitle("Delete Account")
-                .setMessage("Are you sure you want to permanently delete your account? This action cannot be undone and all your order history will be removed.")
-                .setPositiveButton("Delete") { _, _ ->
-                    deleteAccount()
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
-        }
-        
-        binding.btnLogout.setOnClickListener {
-            SharedPrefManager.clear()
-            val intent = Intent(requireContext(), LoginActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-        }
-    }
-
-    private fun deleteAccount() {
-        binding.progressBar.visibility = View.VISIBLE
-        lifecycleScope.launch {
-            try {
-                val response = RetrofitClient.instance.deleteAccount()
-                if (response.isSuccessful) {
-                    Toast.makeText(context, "Account deleted successfully", Toast.LENGTH_SHORT).show()
-                    binding.btnLogout.performClick()
-                } else {
-                    Toast.makeText(context, "Failed to delete account", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(context, "Network error", Toast.LENGTH_SHORT).show()
-            } finally {
-                binding.progressBar.visibility = View.GONE
-            }
-        }
+        presenter.load()
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        presenter.detach()
         _binding = null
+        super.onDestroyView()
     }
+
+    private fun bindListeners() {
+        binding.rowEditProfile.setOnClickListener {
+            startActivity(Intent(requireContext(), UpdateProfileActivity::class.java))
+        }
+        binding.rowAddresses.setOnClickListener { toast("Saved addresses coming soon") }
+        binding.rowPayments.setOnClickListener { toast("Payment methods coming soon") }
+        binding.rowNotifications.setOnClickListener { toast("Notification settings coming soon") }
+        binding.rowSupport.setOnClickListener {
+            android.app.AlertDialog.Builder(requireContext())
+                .setTitle("Help & Support")
+                .setMessage("Need help? Email us at support@washwise.com and we'll get back within 24 hours.")
+                .setPositiveButton("Got it", null)
+                .show()
+        }
+        binding.rowSignOut.setOnClickListener { confirmSignOut() }
+    }
+
+    private fun confirmSignOut() {
+        android.app.AlertDialog.Builder(requireContext())
+            .setTitle("Sign out?")
+            .setMessage("You'll need to sign in again to access your orders.")
+            .setPositiveButton("Sign out") { _, _ ->
+                SharedPrefManager.clear()
+                val intent = Intent(requireContext(), LoginActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                startActivity(intent)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun toast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    }
+
+    // region View contract
+    override fun renderProfile(profile: UserResponse, initials: String) {
+        binding.tvName.text = profile.fullName.ifBlank { "User" }
+        binding.tvEmail.text = profile.email
+        binding.tvAvatarInitials.text = initials
+        binding.tvAddressSubtitle.text = profile.address
+            ?.takeIf { it.isNotBlank() }
+            ?: "Add a pickup address"
+    }
+
+    override fun renderStats(orders: Int, completed: Int, rating: String) {
+        binding.tvStatOrders.text = orders.toString()
+        binding.tvStatCompleted.text = completed.toString()
+        binding.tvStatRating.text = rating
+    }
+    // endregion
 }

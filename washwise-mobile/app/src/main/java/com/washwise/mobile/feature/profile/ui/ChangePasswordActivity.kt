@@ -1,47 +1,101 @@
 package com.washwise.mobile.feature.profile.ui
 
+import android.graphics.Color
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import com.washwise.mobile.shared.api.RetrofitClient
-import com.washwise.mobile.feature.profile.data.ChangePasswordRequest
 import com.washwise.mobile.databinding.ActivityChangePasswordBinding
-import kotlinx.coroutines.launch
+import com.washwise.mobile.feature.profile.presenter.ChangePasswordContract
+import com.washwise.mobile.feature.profile.presenter.ChangePasswordContract.ChangeInput
+import com.washwise.mobile.feature.profile.presenter.ChangePasswordContract.Field
+import com.washwise.mobile.feature.profile.presenter.ChangePasswordContract.StrengthLevel
+import com.washwise.mobile.feature.profile.presenter.ChangePasswordPresenter
 
-class ChangePasswordActivity : AppCompatActivity() {
+/**
+ * View role for the Change Password screen. All business logic lives in
+ * [ChangePasswordPresenter]; this class only renders state and forwards input.
+ */
+class ChangePasswordActivity : AppCompatActivity(), ChangePasswordContract.View {
+
     private lateinit var binding: ActivityChangePasswordBinding
+    private val presenter: ChangePasswordContract.Presenter = ChangePasswordPresenter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChangePasswordBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        presenter.attach(this)
+        bindListeners()
+    }
+
+    override fun onDestroy() {
+        presenter.detach()
+        super.onDestroy()
+    }
+
+    private fun bindListeners() {
+        binding.btnBack.setOnClickListener { finish() }
         binding.btnChange.setOnClickListener {
-            val current = binding.etCurrent.text.toString().trim()
-            val newPass = binding.etNew.text.toString().trim()
-
-            if(current.isEmpty() || newPass.isEmpty()) return@setOnClickListener
-
-            binding.btnChange.isEnabled = false
-
-            lifecycleScope.launch {
-                try {
-                    val request = ChangePasswordRequest(current, newPass)
-                    val response = RetrofitClient.instance.changePassword(request)
-
-                    if (response.isSuccessful) {
-                        Toast.makeText(this@ChangePasswordActivity, "Password Updated", Toast.LENGTH_SHORT).show()
-                        finish()
-                    } else {
-                        Toast.makeText(this@ChangePasswordActivity, "Failed to update password", Toast.LENGTH_SHORT).show()
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(this@ChangePasswordActivity, "Network Error", Toast.LENGTH_SHORT).show()
-                } finally {
-                    binding.btnChange.isEnabled = true
-                }
+            presenter.submit(
+                ChangeInput(
+                    current = binding.etCurrent.text.toString(),
+                    newPassword = binding.etNew.text.toString(),
+                    confirmPassword = binding.etConfirm.text.toString()
+                )
+            )
+        }
+        binding.etNew.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+            override fun afterTextChanged(s: Editable?) {
+                presenter.onNewPasswordChanged(s?.toString().orEmpty())
             }
+        })
+    }
+
+    // region View contract
+    override fun showSubmitting() {
+        binding.btnChange.isEnabled = false
+        binding.progressSubmit.visibility = View.VISIBLE
+    }
+
+    override fun hideSubmitting() {
+        binding.btnChange.isEnabled = true
+        binding.progressSubmit.visibility = View.GONE
+    }
+
+    override fun showSuccess() {
+        Toast.makeText(this, "Password updated", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showError(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    }
+
+    override fun showFieldError(field: Field, message: String) {
+        val target = when (field) {
+            Field.CURRENT -> binding.etCurrent
+            Field.NEW -> binding.etNew
+            Field.CONFIRM -> binding.etConfirm
+        }
+        target.error = message
+        target.requestFocus()
+    }
+
+    override fun showStrength(level: StrengthLevel) {
+        binding.tvStrength.apply {
+            text = "Strength: ${level.label}"
+            setTextColor(Color.parseColor(level.colorHex))
+            visibility = View.VISIBLE
         }
     }
+
+    override fun close() {
+        finish()
+    }
+    // endregion
 }

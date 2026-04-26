@@ -51,6 +51,18 @@
             android:name=".feature.order.ui.BookServiceActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".feature.order.ui.OrderTrackingActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".feature.staff.ui.StaffMainActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".feature.admin.ui.AdminMainActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

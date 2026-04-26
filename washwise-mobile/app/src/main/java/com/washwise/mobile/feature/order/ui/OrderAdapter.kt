@@ -1,14 +1,15 @@
 package com.washwise.mobile.feature.order.ui
 
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.washwise.mobile.R
 import com.washwise.mobile.databinding.ItemOrderBinding
 import com.washwise.mobile.feature.order.data.OrderResponse
+import java.util.Locale
 
 class OrderAdapter(
     private val onOrderClick: (OrderResponse) -> Unit
@@ -19,58 +20,39 @@ class OrderAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(order: OrderResponse) {
-            // Setup Order ID (mocked format WW-2026-XX like mockup)
-            val mockId = order.id.takeLast(2).padStart(2, '0').uppercase()
-            binding.tvOrderId.text = "WW-2026-$mockId"
-            
-            // Subtitle
-            val serviceName = order.service?.name ?: "Service"
-            // For mockup matching, just displaying a generic weight if not provided
-            binding.tvServiceSub.text = "$serviceName · 5 kg"
-            
-            binding.tvPrice.text = "$${String.format("%.0f", order.totalPrice)}"
+            val shortId = order.id.replace("-", "").take(6).uppercase()
+            binding.tvOrderId.text = "WW-2026-$shortId"
 
-            // Status badge styling
-            val status = order.status.lowercase().replaceFirstChar { it.uppercase() }
-            binding.tvStatus.text = status
-            
-            val (bgColor, textColor) = getStatusColors(order.status)
-            val badgeBg = binding.tvStatus.background as? GradientDrawable
-                ?: GradientDrawable().apply {
-                    cornerRadius = 40f
-                    binding.tvStatus.background = this
-                }
-            badgeBg.setColor(bgColor)
-            binding.tvStatus.setTextColor(textColor)
-            
-            // Set dynamic colors based on service name
-            val iconTint: String
-            val iconBg: String
-            when (serviceName.lowercase()) {
-                "wash & fold" -> { iconTint = "#2B7CFF"; iconBg = "#EAF2FF" }
-                "dry clean" -> { iconTint = "#A855F7"; iconBg = "#F3E8FF" }
-                "ironing" -> { iconTint = "#F97316"; iconBg = "#FFEDD5" }
-                "premium care" -> { iconTint = "#22C55E"; iconBg = "#DCFCE7" }
-                "express wash" -> { iconTint = "#14B8A6"; iconBg = "#CCFBF1" }
-                "delivery" -> { iconTint = "#EC4899"; iconBg = "#FCE7F3" }
-                else -> { iconTint = "#6C757D"; iconBg = "#F8F9FA" }
-            }
-            binding.ivServiceIcon.setColorFilter(Color.parseColor(iconTint))
-            binding.flIconContainer.background.setTint(Color.parseColor(iconBg))
+            val serviceName = order.service?.name ?: "Laundry Service"
+            val weight = order.weightKg?.takeIf { it > 0.0 } ?: extractWeight(order.notes)
+            val weightText = weight?.let { " · ${formatWeight(it)} kg" } ?: ""
+            binding.tvServiceSub.text = "$serviceName$weightText"
+
+            binding.tvPrice.text = String.format(Locale.US, "₱%.0f", order.totalPrice ?: 0.0)
+
+            val styled = StatusStyle.forStatus(order.status)
+            binding.tvStatus.text = styled.label
+            binding.tvStatus.setBackgroundResource(styled.pillBgRes)
+            binding.tvStatus.setTextColor(Color.parseColor(styled.textColor))
+
+            val iconStyle = ServiceIconStyle.forName(serviceName)
+            binding.ivServiceIcon.setImageResource(iconStyle.iconRes)
+            binding.ivServiceIcon.setColorFilter(Color.parseColor(iconStyle.iconTint))
+            binding.flIconContainer.background.setTint(Color.parseColor(iconStyle.bgTint))
 
             binding.root.setOnClickListener { onOrderClick(order) }
         }
 
-        private fun getStatusColors(status: String): Pair<Int, Int> {
-            return when (status.uppercase()) {
-                "PENDING" -> Pair(Color.parseColor("#FFF8E1"), Color.parseColor("#F59E0B"))
-                "WASHING", "IN_PROGRESS", "PROCESSING" -> Pair(Color.parseColor("#F3E8FF"), Color.parseColor("#A855F7"))
-                "COMPLETED" -> Pair(Color.parseColor("#F1F5F9"), Color.parseColor("#475569"))
-                "CANCELLED" -> Pair(Color.parseColor("#FEF2F2"), Color.parseColor("#EF4444"))
-                "PICKED_UP" -> Pair(Color.parseColor("#EFF6FF"), Color.parseColor("#3B82F6"))
-                else -> Pair(Color.parseColor("#F1F5F9"), Color.parseColor("#475569"))
-            }
+        private fun extractWeight(notes: String?): Double? {
+            if (notes.isNullOrBlank()) return null
+            val match = Regex("""Weight[^0-9]*([0-9]+(?:\.[0-9]+)?)""", RegexOption.IGNORE_CASE)
+                .find(notes)
+            return match?.groupValues?.getOrNull(1)?.toDoubleOrNull()
         }
+
+        private fun formatWeight(value: Double): String =
+            if (value % 1.0 == 0.0) value.toInt().toString()
+            else String.format(Locale.US, "%.1f", value)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderViewHolder {
@@ -90,5 +72,57 @@ class OrderAdapter(
 
         override fun areContentsTheSame(oldItem: OrderResponse, newItem: OrderResponse) =
             oldItem == newItem
+    }
+
+    private data class StatusStyle(
+        val label: String,
+        val pillBgRes: Int,
+        val textColor: String
+    ) {
+        companion object {
+            fun forStatus(status: String?): StatusStyle = when ((status ?: "").uppercase()) {
+                "PENDING" -> StatusStyle("Pending", R.drawable.bg_pill_amber, "#B45309")
+                "PICKED_UP", "PICKED-UP" ->
+                    StatusStyle("Picked Up", R.drawable.bg_badge_blue, "#1D4ED8")
+                "WASHING", "IN_PROGRESS", "IN-PROGRESS", "PROCESSING" ->
+                    StatusStyle("Washing", R.drawable.bg_pill_purple, "#7E22CE")
+                "DRYING" -> StatusStyle("Drying", R.drawable.bg_pill_purple, "#7E22CE")
+                "READY", "READY_FOR_PICKUP", "READY-FOR-PICKUP" ->
+                    StatusStyle("Ready", R.drawable.bg_badge_blue, "#1D4ED8")
+                "DELIVERED", "COMPLETED" ->
+                    StatusStyle("Completed", R.drawable.bg_pill_grey_soft, "#475569")
+                "CANCELLED", "CANCELED" ->
+                    StatusStyle("Cancelled", R.drawable.bg_pill_grey_soft, "#EF4444")
+                else -> StatusStyle(
+                    (status ?: "Pending").lowercase().replaceFirstChar { it.uppercase() },
+                    R.drawable.bg_pill_grey_soft,
+                    "#475569"
+                )
+            }
+        }
+    }
+
+    private data class ServiceIconStyle(
+        val iconRes: Int,
+        val iconTint: String,
+        val bgTint: String
+    ) {
+        companion object {
+            fun forName(name: String): ServiceIconStyle {
+                val n = name.lowercase()
+                return when {
+                    "wash only" in n -> ServiceIconStyle(R.drawable.ic_droplet, "#0891B2", "#CFFAFE")
+                    "wash-dry-fold" in n || "wash & fold" in n || "wash dry fold" in n ->
+                        ServiceIconStyle(R.drawable.ic_tshirt, "#2563EB", "#DBEAFE")
+                    "dry clean" in n || "dry cleaning" in n ->
+                        ServiceIconStyle(R.drawable.ic_sparkle, "#9810FA", "#F3E8FF")
+                    "premium" in n ->
+                        ServiceIconStyle(R.drawable.ic_star, "#FF6B35", "#FFEDD5")
+                    "iron" in n ->
+                        ServiceIconStyle(R.drawable.ic_iron, "#14B8A6", "#CCFBF1")
+                    else -> ServiceIconStyle(R.drawable.ic_box, "#2563EB", "#DBEAFE")
+                }
+            }
+        }
     }
 }

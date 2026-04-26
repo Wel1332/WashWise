@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">WashWise</string>
+    <string name="dashboard_greeting">Hi, %1$s! 👋</string>
 </resources>

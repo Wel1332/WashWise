@@ -33,6 +33,10 @@ object SharedPrefManager {
 
     fun getUserEmail(): String? = prefs.getString(Constants.KEY_USER_EMAIL, null)
 
+    fun getUserRole(): String? = prefs.getString(Constants.KEY_USER_ROLE, null)
+
+    fun getUserId(): String? = prefs.getString(Constants.KEY_USER_ID, null)
+
     fun clear() {
         prefs.edit().clear().apply()
     }

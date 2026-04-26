@@ -9,6 +9,11 @@ import com.washwise.mobile.feature.dashboard.ui.DashboardFragment
 import com.washwise.mobile.feature.order.ui.OrdersFragment
 import com.washwise.mobile.feature.profile.ui.ProfileFragment
 
+/**
+ * App shell that hosts the three bottom-tab fragments:
+ * Dashboard (feature.dashboard), Orders (feature.order) and Profile (feature.profile).
+ * Contains no feature logic of its own — each tab is a self-contained vertical slice.
+ */
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 

@@ -5,115 +5,86 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import com.washwise.mobile.shared.api.RetrofitClient
-import com.washwise.mobile.feature.auth.data.LoginRequest
 import com.washwise.mobile.databinding.ActivityLoginBinding
+import com.washwise.mobile.feature.auth.presenter.LoginContract
+import com.washwise.mobile.feature.auth.presenter.LoginContract.Field
+import com.washwise.mobile.feature.auth.presenter.LoginContract.Role
+import com.washwise.mobile.feature.auth.presenter.LoginPresenter
+import com.washwise.mobile.feature.admin.ui.AdminMainActivity
+import com.washwise.mobile.feature.staff.ui.StaffMainActivity
 import com.washwise.mobile.ui.main.MainActivity
-import com.washwise.mobile.shared.util.SharedPrefManager
-import kotlinx.coroutines.launch
 
-class LoginActivity : AppCompatActivity() {
+/**
+ * View role of the Login MVP triad. Only renders state and forwards input to
+ * the [LoginPresenter]. Holds no business logic or network calls.
+ */
+class LoginActivity : AppCompatActivity(), LoginContract.View {
 
     private lateinit var binding: ActivityLoginBinding
+    private val presenter: LoginContract.Presenter = LoginPresenter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Check if already logged in
-        if (SharedPrefManager.isLoggedIn()) {
-            navigateToMain()
-            return
-        }
-
-        setupListeners()
+        presenter.attach(this)
+        bindListeners()
+        presenter.start()
     }
 
-    private fun setupListeners() {
-        binding.btnBack.setOnClickListener {
-            finish() // This tells Android to close the Login screen and go back
-        }
+    override fun onDestroy() {
+        presenter.detach()
+        super.onDestroy()
+    }
 
+    private fun bindListeners() {
+        binding.btnBack.setOnClickListener { finish() }
         binding.btnLogin.setOnClickListener {
-            val email = binding.etEmail.text.toString().trim()
-            val password = binding.etPassword.text.toString().trim()
-
-            if (validateInput(email, password)) {
-                performLogin(email, password)
-            }
+            presenter.submit(
+                email = binding.etEmail.text.toString(),
+                password = binding.etPassword.text.toString()
+            )
         }
-
-        binding.tvRegister.setOnClickListener {
-            startActivity(Intent(this, RegisterActivity::class.java))
-        }
+        binding.tvRegister.setOnClickListener { presenter.onRegisterClicked() }
     }
 
-    private fun validateInput(email: String, password: String): Boolean {
-        if (email.isEmpty()) {
-            binding.etEmail.error = "Email is required"
-            return false
-        }
-
-        if (password.isEmpty()) {
-            binding.etPassword.error = "Password is required"
-            return false
-        }
-
-        return true
+    // region View contract
+    override fun showLoading() {
+        binding.progressBar.visibility = View.VISIBLE
+        binding.btnLogin.isEnabled = false
     }
 
-    private fun performLogin(email: String, password: String) {
-        showLoading(true)
+    override fun hideLoading() {
+        binding.progressBar.visibility = View.GONE
+        binding.btnLogin.isEnabled = true
+    }
 
-        lifecycleScope.launch {
-            try {
-                val request = LoginRequest(email, password)
-                val response = RetrofitClient.instance.login(request)
-
-                if (response.isSuccessful && response.body()?.success == true) {
-                    // Extract the AuthResponse data
-                    val data = response.body()!!.data!!
-
-                    // Save session data using the exact fields from AuthResponse
-                    SharedPrefManager.saveAuthSession(
-                        token = data.accessToken,
-                        refreshToken = data.refreshToken,
-                        id = data.id,
-                        name = data.fullName,
-                        email = data.email,
-                        role = data.role
-                    )
-
-                    Toast.makeText(this@LoginActivity, "Login successful!", Toast.LENGTH_SHORT).show()
-
-                    // Navigate to MainActivity
-                    startActivity(Intent(this@LoginActivity, MainActivity::class.java))
-                    finish() // Close LoginActivity so the user can't press 'back' to it
-                } else {
-                    val message = response.body()?.message ?: "Login failed"
-                    Toast.makeText(this@LoginActivity, message, Toast.LENGTH_LONG).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(
-                    this@LoginActivity,
-                    "Network error: ${e.localizedMessage}",
-                    Toast.LENGTH_LONG
-                ).show()
-            } finally {
-                showLoading(false)
-            }
+    override fun showFieldError(field: Field, message: String) {
+        val target = when (field) {
+            Field.EMAIL -> binding.etEmail
+            Field.PASSWORD -> binding.etPassword
         }
+        target.error = message
+        target.requestFocus()
     }
 
-    private fun showLoading(isLoading: Boolean) {
-        binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-        binding.btnLogin.isEnabled = !isLoading
+    override fun showError(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    private fun navigateToMain() {
-        startActivity(Intent(this, MainActivity::class.java))
+    override fun navigateToHome(role: Role) {
+        val target = when (role) {
+            Role.ADMIN -> AdminMainActivity::class.java
+            Role.STAFF -> StaffMainActivity::class.java
+            Role.CUSTOMER -> MainActivity::class.java
+        }
+        startActivity(Intent(this, target))
         finish()
     }
+
+    override fun navigateToRegister() {
+        startActivity(Intent(this, RegisterActivity::class.java))
+    }
+    // endregion
 }

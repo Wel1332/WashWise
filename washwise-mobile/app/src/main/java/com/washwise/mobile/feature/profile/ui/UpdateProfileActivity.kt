@@ -1,47 +1,121 @@
 package com.washwise.mobile.feature.profile.ui
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import com.washwise.mobile.shared.api.RetrofitClient
-import com.washwise.mobile.feature.profile.data.UpdateProfileRequest
 import com.washwise.mobile.databinding.ActivityUpdateProfileBinding
-import kotlinx.coroutines.launch
+import com.washwise.mobile.feature.profile.data.UserResponse
+import com.washwise.mobile.feature.profile.presenter.UpdateProfileContract
+import com.washwise.mobile.feature.profile.presenter.UpdateProfileContract.Field
+import com.washwise.mobile.feature.profile.presenter.UpdateProfileContract.UpdateInput
+import com.washwise.mobile.feature.profile.presenter.UpdateProfilePresenter
 
-class UpdateProfileActivity : AppCompatActivity() {
+/**
+ * View role in the MVP triad. Delegates all business logic to [UpdateProfilePresenter].
+ */
+class UpdateProfileActivity : AppCompatActivity(), UpdateProfileContract.View {
+
     private lateinit var binding: ActivityUpdateProfileBinding
+    private val presenter: UpdateProfileContract.Presenter = UpdateProfilePresenter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityUpdateProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.btnSave.setOnClickListener {
-            val phone = binding.etPhone.text.toString().trim()
-            val address = binding.etAddress.text.toString().trim()
-            val city = binding.etCity.text.toString().trim()
+        presenter.attach(this)
+        bindClicks()
+        presenter.loadProfile()
+    }
 
-            // Show loading state here ideally
-            binding.btnSave.isEnabled = false
+    override fun onDestroy() {
+        presenter.detach()
+        super.onDestroy()
+    }
 
-            lifecycleScope.launch {
-                try {
-                    val request = UpdateProfileRequest(null, null, phone, address, city, null)
-                    val response = RetrofitClient.instance.updateProfile(request)
+    private fun bindClicks() {
+        binding.btnBack.setOnClickListener { finish() }
+        binding.btnSave.setOnClickListener { presenter.save(collectInput()) }
+        binding.rowChangePassword.setOnClickListener {
+            startActivity(Intent(this, ChangePasswordActivity::class.java))
+        }
+    }
 
-                    if (response.isSuccessful) {
-                        Toast.makeText(this@UpdateProfileActivity, "Profile Updated", Toast.LENGTH_SHORT).show()
-                        finish() // Go back to profile screen
-                    } else {
-                        Toast.makeText(this@UpdateProfileActivity, "Update Failed", Toast.LENGTH_SHORT).show()
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(this@UpdateProfileActivity, "Network Error", Toast.LENGTH_SHORT).show()
-                } finally {
-                    binding.btnSave.isEnabled = true
-                }
-            }
+    private fun collectInput(): UpdateInput = UpdateInput(
+        fullName = binding.etFullName.text.toString(),
+        phoneNumber = binding.etPhone.text.toString(),
+        bio = binding.etBio.text.toString(),
+        address = binding.etAddress.text.toString(),
+        city = binding.etCity.text.toString(),
+        zipCode = binding.etZip.text.toString()
+    )
+
+    // region View contract
+    override fun showLoading() {
+        binding.progressBar.visibility = View.VISIBLE
+    }
+
+    override fun hideLoading() {
+        binding.progressBar.visibility = View.GONE
+    }
+
+    override fun showSaving() {
+        binding.btnSave.isEnabled = false
+        binding.progressSave.visibility = View.VISIBLE
+    }
+
+    override fun hideSaving() {
+        binding.btnSave.isEnabled = true
+        binding.progressSave.visibility = View.GONE
+    }
+
+    override fun renderProfile(profile: UserResponse) {
+        binding.tvHeaderName.text = profile.fullName.ifBlank { "Your Profile" }
+        binding.tvHeaderEmail.text = profile.email
+        binding.tvAvatarInitials.text = initialsOf(profile.fullName)
+
+        binding.etFullName.setText(profile.fullName)
+        binding.etPhone.setText(profile.phoneNumber.orEmpty())
+        binding.etBio.setText(profile.bio.orEmpty())
+        binding.etAddress.setText(profile.address.orEmpty())
+        binding.etCity.setText(profile.city.orEmpty())
+        binding.etZip.setText(profile.zipCode.orEmpty())
+    }
+
+    override fun showSaveSuccess() {
+        Toast.makeText(this, "Profile saved", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showError(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    }
+
+    override fun showFieldError(field: Field, message: String) {
+        val target = when (field) {
+            Field.FULL_NAME -> binding.etFullName
+            Field.PHONE -> binding.etPhone
+            Field.ADDRESS -> binding.etAddress
+            Field.CITY -> binding.etCity
+            Field.ZIP -> binding.etZip
+            Field.BIO -> binding.etBio
+        }
+        target.error = message
+        target.requestFocus()
+    }
+
+    override fun close() {
+        finish()
+    }
+    // endregion
+
+    private fun initialsOf(name: String): String {
+        val parts = name.trim().split(" ").filter { it.isNotBlank() }
+        return when {
+            parts.isEmpty() -> "U"
+            parts.size == 1 -> parts[0].take(2).uppercase()
+            else -> "${parts[0].first()}${parts[1].first()}".uppercase()
         }
     }
 }

@@ -5,104 +5,80 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import com.washwise.mobile.shared.api.RetrofitClient
-import com.washwise.mobile.feature.auth.data.RegisterRequest
 import com.washwise.mobile.databinding.ActivityRegisterBinding
+import com.washwise.mobile.feature.auth.presenter.RegisterContract
+import com.washwise.mobile.feature.auth.presenter.RegisterContract.Field
+import com.washwise.mobile.feature.auth.presenter.RegisterContract.RegisterInput
+import com.washwise.mobile.feature.auth.presenter.RegisterPresenter
 import com.washwise.mobile.ui.main.MainActivity
-import com.washwise.mobile.shared.util.SharedPrefManager
-import kotlinx.coroutines.launch
 
-class RegisterActivity : AppCompatActivity() {
+/**
+ * View role for the Register screen. Delegates to [RegisterPresenter].
+ */
+class RegisterActivity : AppCompatActivity(), RegisterContract.View {
 
     private lateinit var binding: ActivityRegisterBinding
+    private val presenter: RegisterContract.Presenter = RegisterPresenter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupListeners()
+        presenter.attach(this)
+        bindListeners()
     }
 
-    private fun setupListeners() {
-        binding.btnBack.setOnClickListener {
-            finish() // Closes Register screen and goes back
-        }
+    override fun onDestroy() {
+        presenter.detach()
+        super.onDestroy()
+    }
+
+    private fun bindListeners() {
+        binding.btnBack.setOnClickListener { finish() }
+        binding.tvLogin.setOnClickListener { finish() }
         binding.btnRegister.setOnClickListener {
-            val fullName = binding.etFullName.text.toString().trim()
-            val email = binding.etEmail.text.toString().trim()
-            val password = binding.etPassword.text.toString().trim()
-            val confirmPassword = binding.etConfirmPassword.text.toString().trim()
-
-            if (validateInput(fullName, email, password, confirmPassword)) {
-                performRegistration(fullName, email, password, confirmPassword)
-            }
-        }
-
-        binding.tvLogin.setOnClickListener {
-            finish() // Closes RegisterActivity and returns to LoginActivity
+            presenter.submit(
+                RegisterInput(
+                    fullName = binding.etFullName.text.toString(),
+                    email = binding.etEmail.text.toString(),
+                    password = binding.etPassword.text.toString(),
+                    confirmPassword = binding.etConfirmPassword.text.toString()
+                )
+            )
         }
     }
 
-    private fun validateInput(fullName: String, email: String, pass: String, confirmPass: String): Boolean {
-        if (fullName.isEmpty()) {
-            binding.etFullName.error = "Name is required"
-            return false
-        }
-        if (email.isEmpty()) {
-            binding.etEmail.error = "Email is required"
-            return false
-        }
-        if (pass.length < 8) {
-            binding.etPassword.error = "Password must be at least 8 characters"
-            return false
-        }
-        if (pass != confirmPass) {
-            binding.etConfirmPassword.error = "Passwords do not match"
-            return false
-        }
-        return true
+    // region View contract
+    override fun showLoading() {
+        binding.progressBar.visibility = View.VISIBLE
+        binding.btnRegister.isEnabled = false
     }
 
-    private fun performRegistration(fullName: String, email: String, pass: String, confirmPass: String) {
-        showLoading(true)
+    override fun hideLoading() {
+        binding.progressBar.visibility = View.GONE
+        binding.btnRegister.isEnabled = true
+    }
 
-        lifecycleScope.launch {
-            try {
-                val request = RegisterRequest(email, pass, confirmPass, fullName)
-                val response = RetrofitClient.instance.register(request)
-
-                if (response.isSuccessful && response.body()?.success == true) {
-                    val data = response.body()!!.data!!
-
-                    // Save session data using the exact fields from our new AuthResponse
-                    SharedPrefManager.saveAuthSession(
-                        token = data.accessToken,
-                        refreshToken = data.refreshToken,
-                        id = data.id,
-                        name = data.fullName,
-                        email = data.email,
-                        role = data.role
-                    )
-
-                    Toast.makeText(this@RegisterActivity, "Registration successful!", Toast.LENGTH_SHORT).show()
-                    startActivity(Intent(this@RegisterActivity, MainActivity::class.java))
-                    finishAffinity() // Clears the back stack so they can't hit back to register again
-                } else {
-                    val message = response.body()?.message ?: "Registration failed"
-                    Toast.makeText(this@RegisterActivity, message, Toast.LENGTH_LONG).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(this@RegisterActivity, "Network error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
-            } finally {
-                showLoading(false)
-            }
+    override fun showFieldError(field: Field, message: String) {
+        val target = when (field) {
+            Field.FULL_NAME -> binding.etFullName
+            Field.EMAIL -> binding.etEmail
+            Field.PASSWORD -> binding.etPassword
+            Field.CONFIRM_PASSWORD -> binding.etConfirmPassword
         }
+        target.error = message
+        target.requestFocus()
     }
 
-    private fun showLoading(isLoading: Boolean) {
-        binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-        binding.btnRegister.isEnabled = !isLoading
+    override fun showError(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
+
+    override fun navigateToHome() {
+        Toast.makeText(this, "Welcome to WashWise!", Toast.LENGTH_SHORT).show()
+        startActivity(Intent(this, MainActivity::class.java))
+        finishAffinity()
+    }
+    // endregion
 }

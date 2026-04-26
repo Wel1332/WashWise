@@ -323,17 +323,6 @@
                 android:textColor="#111827"
                 android:textSize="18sp"
                 android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvOffersSeeAll"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:focusable="true"
-                android:fontFamily="sans-serif-medium"
-                android:text="See all →"
-                android:textColor="#2563EB"
-                android:textSize="13sp" />
         </LinearLayout>
 
         <HorizontalScrollView
@@ -539,17 +528,6 @@
                 android:textColor="#111827"
                 android:textSize="18sp"
                 android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvServicesViewAll"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:focusable="true"
-                android:fontFamily="sans-serif-medium"
-                android:text="View all →"
-                android:textColor="#2563EB"
-                android:textSize="13sp" />
         </LinearLayout>
 
         <ProgressBar

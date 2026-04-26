@@ -14,9 +14,15 @@ import com.washwise.mobile.feature.profile.data.UserResponse
 // Order models
 import com.washwise.mobile.feature.order.data.OrderResponse
 import com.washwise.mobile.feature.order.data.CreateOrderRequest
+import com.washwise.mobile.feature.order.data.UpdateOrderRequest
 
 // Service models
 import com.washwise.mobile.feature.service.data.ServiceResponse
+
+// Admin models
+import com.washwise.mobile.feature.admin.data.AdminUser
+import com.washwise.mobile.feature.admin.data.CreateServiceRequest
+import com.washwise.mobile.feature.admin.data.UpdateRoleRequest
 
 import retrofit2.Response
 import retrofit2.http.*
@@ -56,8 +62,17 @@ interface ApiService {
     @GET("orders/my-orders")
     suspend fun getMyOrders(): Response<ApiResponse<List<OrderResponse>>>
 
+    @GET("orders")
+    suspend fun getAllOrders(): Response<ApiResponse<List<OrderResponse>>>
+
     @POST("orders")
     suspend fun createOrder(@Body request: CreateOrderRequest): Response<ApiResponse<OrderResponse>>
+
+    @PUT("orders/{id}")
+    suspend fun updateOrder(
+        @Path("id") id: String,
+        @Body request: UpdateOrderRequest
+    ): Response<ApiResponse<OrderResponse>>
 
     @DELETE("orders/{id}")
     suspend fun cancelOrder(@Path("id") id: String): Response<ApiResponse<Any>>
@@ -67,4 +82,24 @@ interface ApiService {
     // ==========================================
     @GET("services/active")
     suspend fun getActiveServices(): Response<ApiResponse<List<ServiceResponse>>>
+
+    @GET("services")
+    suspend fun getAllServices(): Response<ApiResponse<List<ServiceResponse>>>
+
+    @POST("services")
+    suspend fun createService(
+        @Body request: CreateServiceRequest
+    ): Response<ApiResponse<ServiceResponse>>
+
+    // ==========================================
+    // Users (admin)
+    // ==========================================
+    @GET("users")
+    suspend fun getAllUsers(): Response<ApiResponse<List<AdminUser>>>
+
+    @PUT("users/{id}/role")
+    suspend fun updateUserRole(
+        @Path("id") id: String,
+        @Body request: UpdateRoleRequest
+    ): Response<ApiResponse<AdminUser>>
 }
