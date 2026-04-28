@@ -38,7 +38,7 @@ public class ServiceService {
             .collect(Collectors.toList());
     }
 
-    @Cacheable(value = "services")
+    @Cacheable(value = "services", key = "'active-all'")
     public List<ServiceResponse> getActiveServices() {
         log.debug("Fetching all active services");
         return serviceRepository.findByIsActiveTrueOrderByCreatedAtDesc()
@@ -142,7 +142,7 @@ public class ServiceService {
         log.info("Service deleted successfully with ID: {}", id);
     }
 
-    @Cacheable(value = "services", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
+    @Cacheable(value = "services", key = "'active-page-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public PageResponse<ServiceResponse> getActiveServices(Pageable pageable) {
         log.debug("Fetching active services with pagination");
         Page<ServiceEntity> page = serviceRepository.findByIsActiveTrueOrderByCreatedAtDesc(pageable);
@@ -165,6 +165,7 @@ public class ServiceService {
             .price(service.getPrice())
             .category(service.getCategory())
             .duration(service.getDuration())
+            .imageUrl(service.getImageUrl())
             .isActive(service.getIsActive())
             .createdAt(service.getCreatedAt())
             .updatedAt(service.getUpdatedAt())

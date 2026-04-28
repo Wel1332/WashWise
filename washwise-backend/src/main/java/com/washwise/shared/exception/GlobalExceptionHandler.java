@@ -4,6 +4,7 @@ import com.washwise.shared.dto.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -121,9 +122,63 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle file IO failures (e.g. multipart upload errors).
+     */
+    @ExceptionHandler(java.io.IOException.class)
+    public ResponseEntity<ApiResponse<Object>> handleIOException(
+            java.io.IOException ex,
+            WebRequest request) {
+
+        log.error("IO error: {}", ex.getMessage(), ex);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(
+                        "File processing failed: " + ex.getMessage(),
+                        null,
+                        HttpStatus.BAD_REQUEST.value()
+                ));
+    }
+
+    /**
+     * Handle illegal argument / business rule violations.
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Object>> handleIllegalArgument(
+            IllegalArgumentException ex,
+            WebRequest request) {
+
+        log.warn("Bad request: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(
+                        ex.getMessage(),
+                        null,
+                        HttpStatus.BAD_REQUEST.value()
+                ));
+    }
+
+    /**
+     * Handle authorization failures from Spring Security or domain checks.
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Object>> handleAccessDenied(
+            AccessDeniedException ex,
+            WebRequest request) {
+
+        log.warn("Access denied: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error(
+                        ex.getMessage(),
+                        null,
+                        HttpStatus.FORBIDDEN.value()
+                ));
+    }
+
+    /**
      * Handle general exceptions
      * Catch-all for unexpected errors
-     * 
+     *
      * @param ex Exception
      * @return 500 Internal Server Error
      */

@@ -21,6 +21,7 @@ public class ServiceResponse {
     private BigDecimal price;
     private String category;
     private String duration;
+    private String imageUrl;
     private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -3,11 +3,13 @@ package com.washwise.shared.config;
 import com.washwise.shared.security.JwtAuthenticationEntryPoint;
 import com.washwise.shared.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -22,15 +24,26 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.http.HttpMethod;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Value("${app.cors.allowed-origins}")
+    private String allowedOrigins;
+
+    @Value("${app.cors.allowed-methods}")
+    private String allowedMethods;
+
+    @Value("${app.cors.allow-credentials:true}")
+    private boolean allowCredentials;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -53,77 +66,60 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
-        // Allow frontend origins
-        configuration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:5173",
-            "http://localhost:3000",
-            "http://127.0.0.1:5173"
-        ));
-        
-        // Allow all HTTP methods
-        configuration.setAllowedMethods(Arrays.asList(
-            "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
-        ));
-        
-        // Allow all headers
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        
-        // Expose Authorization header
-        configuration.setExposedHeaders(Arrays.asList(
-            "Authorization",
-            "Access-Control-Allow-Origin",
-            "Access-Control-Allow-Credentials"
-        ));
-        
-        // Allow credentials (cookies, authorization headers)
-        configuration.setAllowCredentials(true);
-        
-        // Cache preflight response for 1 hour
+        configuration.setAllowedOrigins(splitCsv(allowedOrigins));
+        configuration.setAllowedMethods(splitCsv(allowedMethods));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowCredentials(allowCredentials);
         configuration.setMaxAge(3600L);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-        
         return source;
+    }
+
+    private List<String> splitCsv(String csv) {
+        return Arrays.stream(csv.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                
                 .authorizeHttpRequests(authz -> authz
-                    // Allow public access to uploaded files
-                    .requestMatchers("/uploads/**").permitAll()
-                    
-                    // Public auth endpoints
-                    .requestMatchers("/api/v1/auth/health").permitAll()
-                    .requestMatchers("/api/v1/auth/register").permitAll()
-                    .requestMatchers("/api/v1/auth/login").permitAll()
-                    
-                    // Public service endpoints (GET only)
-                    .requestMatchers(HttpMethod.GET, "/api/v1/services").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/v1/services/**").permitAll()
-                    
-                    // Admin-only service endpoints
-                    .requestMatchers(HttpMethod.POST, "/api/v1/services").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.PUT, "/api/v1/services/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.DELETE, "/api/v1/services/**").hasRole("ADMIN")
-                    
-                    // Order endpoints (authenticated users)
-                    .requestMatchers(HttpMethod.GET, "/api/v1/orders").authenticated()
-                    .requestMatchers(HttpMethod.GET, "/api/v1/orders/**").authenticated()
-                    .requestMatchers(HttpMethod.POST, "/api/v1/orders").authenticated()
-                    .requestMatchers(HttpMethod.PUT, "/api/v1/orders/**").authenticated()
-                    .requestMatchers(HttpMethod.DELETE, "/api/v1/orders/**").authenticated()
+                        // Static uploaded files
+                        .requestMatchers("/uploads/**").permitAll()
 
-                    // Everything else requires auth
-                    .anyRequest().authenticated()
+                        // Public auth endpoints
+                        .requestMatchers("/api/v1/auth/health",
+                                         "/api/v1/auth/register",
+                                         "/api/v1/auth/login",
+                                         "/api/v1/auth/refresh").permitAll()
+
+                        // Swagger / OpenAPI
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                        // Public service browsing (GET only)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/services", "/api/v1/services/**").permitAll()
+
+                        // Service mutations (ADMIN only) — also enforced via @PreAuthorize
+                        .requestMatchers(HttpMethod.POST,   "/api/v1/services").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT,    "/api/v1/services/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/services/**").hasRole("ADMIN")
+
+                        // User management (ADMIN only)
+                        .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
+
+                        // Order browsing for all orders requires staff/admin; per-user routes are open to any auth
+                        .requestMatchers(HttpMethod.GET, "/api/v1/orders").hasAnyRole("ADMIN", "STAFF")
+
+                        // Everything else requires authentication
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception

@@ -11,7 +11,6 @@ import com.washwise.feature.user.entity.User;
 import com.washwise.feature.user.entity.UserRole;
 import com.washwise.shared.exception.DuplicateResourceException;
 import com.washwise.shared.exception.InvalidCredentialsException;
-import com.washwise.shared.exception.ResourceNotFoundException;
 import com.washwise.feature.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -87,20 +86,22 @@ public class AuthService {
      */
     public AuthResponse login(LoginRequest request) {
         log.info("Login attempt for email: {}", request.getEmail());
-        
+
+        // Use a single error message regardless of whether the email exists or
+        // the password is wrong — leaking which one fails would let an attacker
+        // enumerate registered accounts.
         User user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        
+            .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new InvalidCredentialsException("Invalid password");
+            throw new InvalidCredentialsException("Invalid email or password");
         }
-        
+
         log.info("User logged in successfully: {}", user.getEmail());
-        
-        // Create refresh token
+
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
         String accessToken = jwtService.generateToken(user.getEmail());
-        
+
         return buildAuthResponse(user, accessToken, refreshToken.getToken());
     }
 

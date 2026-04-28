@@ -4,13 +4,17 @@ import com.washwise.feature.order.dto.CreateOrderRequest;
 import com.washwise.feature.order.dto.UpdateOrderRequest;
 import com.washwise.feature.order.dto.OrderResponse;
 import com.washwise.feature.order.entity.Order;
-import com.washwise.feature.service.entity.ServiceEntity;
-import com.washwise.feature.user.entity.UserRole;
-import com.washwise.feature.user.entity.User;
 import com.washwise.feature.order.repository.OrderRepository;
+import com.washwise.feature.service.entity.ServiceEntity;
 import com.washwise.feature.service.repository.ServiceRepository;
+import com.washwise.feature.user.entity.User;
+import com.washwise.feature.user.entity.UserRole;
 import com.washwise.feature.user.repository.UserRepository;
+import com.washwise.shared.exception.ResourceNotFoundException;
+
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -20,183 +24,167 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderService {
+
+    private static final Pattern WEIGHT_PATTERN = Pattern.compile("Weight:\\s*(\\d+\\.?\\d*)\\s*kg");
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final ServiceRepository serviceRepository;
 
     @Transactional
-    public void deleteOrder(String orderId, String email) {
-        UUID id = UUID.fromString(orderId);
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // Security check: Only allow deletion if the user owns the order OR is an ADMIN
-        if (!order.getUser().getId().equals(user.getId()) && !user.hasRole(UserRole.ADMIN)) {
-            throw new RuntimeException("Not authorized to delete this order");
-        }
-
-        orderRepository.delete(order);
-    }
-
-    @Transactional
     public OrderResponse createOrder(String email, CreateOrderRequest request) {
-        // Get user
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // Get service
         ServiceEntity service = serviceRepository.findById(request.getServiceId())
-                .orElseThrow(() -> new RuntimeException("Service not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
 
-        // Parse scheduled date and time
         LocalDateTime scheduledDateTime = parseScheduledDateTime(
-            request.getScheduledDate(), 
-            request.getPickupTimeSlot()
+                request.getScheduledDate(),
+                request.getPickupTimeSlot()
         );
 
-        // Build notes from all fields
-        String notes = buildNotes(request);
-
-        // Create order
         Order order = Order.builder()
                 .user(user)
                 .service(service)
                 .totalPrice(request.getTotalPrice())
                 .location(request.getLocation())
                 .scheduledDate(scheduledDateTime)
-                .notes(notes)
+                .notes(buildNotes(request))
                 .status(request.getStatus() != null ? request.getStatus() : "PENDING")
                 .build();
 
-        Order savedOrder = orderRepository.save(order);
-
-        return mapToResponse(savedOrder);
+        Order saved = orderRepository.save(order);
+        log.info("Order {} created by user {}", saved.getId(), email);
+        return mapToResponse(saved);
     }
 
+    @Transactional(readOnly = true)
     public List<OrderResponse> getMyOrders(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        List<Order> orders = orderRepository.findByUserOrderByCreatedAtDesc(user);
-        return orders.stream()
+        return orderRepository.findByUserOrderByCreatedAtDesc(user).stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<OrderResponse> getAllOrders() {
-        List<Order> orders = orderRepository.findAll();
-        return orders.stream()
+        return orderRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional
     public OrderResponse updateOrder(String orderId, UpdateOrderRequest request) {
-        UUID id = UUID.fromString(orderId);
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+        Order order = orderRepository.findById(parseUuid(orderId))
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        // Update fields if provided
         if (request.getStatus() != null) {
             order.setStatus(request.getStatus());
-            
-            // If status is COMPLETED, set completed_date
-            if ("COMPLETED".equals(request.getStatus())) {
+            if ("COMPLETED".equalsIgnoreCase(request.getStatus())) {
                 order.setCompletedDate(LocalDateTime.now());
             }
         }
-
         if (request.getNotes() != null) {
             order.setNotes(request.getNotes());
         }
-
         if (request.getLocation() != null) {
             order.setLocation(request.getLocation());
         }
 
-        Order updatedOrder = orderRepository.save(order);
-        return mapToResponse(updatedOrder);
+        Order updated = orderRepository.save(order);
+        log.info("Order {} updated", updated.getId());
+        return mapToResponse(updated);
+    }
+
+    @Transactional
+    public void deleteOrder(String orderId, String email) {
+        Order order = orderRepository.findById(parseUuid(orderId))
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        boolean isOwner = order.getUser().getId().equals(user.getId());
+        if (!isOwner && !user.hasRole(UserRole.ADMIN)) {
+            throw new AccessDeniedException("Not authorized to delete this order");
+        }
+
+        orderRepository.delete(order);
+        log.info("Order {} deleted by {}", order.getId(), email);
+    }
+
+    private UUID parseUuid(String value) {
+        try {
+            return UUID.fromString(value);
+        } catch (IllegalArgumentException ex) {
+            throw new ResourceNotFoundException("Invalid order id: " + value);
+        }
     }
 
     private LocalDateTime parseScheduledDateTime(LocalDate date, String timeSlot) {
-        LocalTime time;
-        
-        try {
-            if (timeSlot != null && !timeSlot.isEmpty()) {
-                // Parse time slot (format: "8-10" means 8:00 AM)
-                String[] times = timeSlot.split("-");
-                int hour = Integer.parseInt(times[0]);
-                time = LocalTime.of(hour, 0);
-            } else {
-                time = LocalTime.of(9, 0); // Default to 9 AM
+        LocalTime time = LocalTime.of(9, 0);
+        if (timeSlot != null && !timeSlot.isBlank()) {
+            try {
+                int hour = Integer.parseInt(timeSlot.split("-")[0].trim());
+                if (hour >= 0 && hour <= 23) {
+                    time = LocalTime.of(hour, 0);
+                }
+            } catch (NumberFormatException ignored) {
+                // fall through to default 9 AM
             }
-        } catch (Exception e) {
-            time = LocalTime.of(9, 0); // Default to 9 AM on error
         }
-        
         return LocalDateTime.of(date, time);
     }
 
     private String buildNotes(CreateOrderRequest request) {
         StringBuilder notes = new StringBuilder();
-        
         if (request.getWeightKg() != null && request.getWeightKg() > 0) {
             notes.append("Weight: ").append(request.getWeightKg()).append(" kg\n");
         }
-        
-        if (request.getPickupTimeSlot() != null && !request.getPickupTimeSlot().isEmpty()) {
+        if (isPresent(request.getPickupTimeSlot())) {
             notes.append("Pickup Time Slot: ").append(request.getPickupTimeSlot()).append("\n");
         }
-        
-        if (request.getDeliveryDate() != null && !request.getDeliveryDate().isEmpty()) {
+        if (isPresent(request.getDeliveryDate())) {
             notes.append("Delivery Date: ").append(request.getDeliveryDate()).append("\n");
         }
-        
-        if (request.getDeliveryTimeSlot() != null && !request.getDeliveryTimeSlot().isEmpty()) {
+        if (isPresent(request.getDeliveryTimeSlot())) {
             notes.append("Delivery Time Slot: ").append(request.getDeliveryTimeSlot()).append("\n");
         }
-        
-        if (request.getSpecialInstructions() != null && !request.getSpecialInstructions().isEmpty()) {
+        if (isPresent(request.getSpecialInstructions())) {
             notes.append("\nSpecial Instructions:\n").append(request.getSpecialInstructions());
         }
-        
         String result = notes.toString().trim();
         return result.isEmpty() ? null : result;
+    }
+
+    private boolean isPresent(String value) {
+        return value != null && !value.isBlank();
     }
 
     private Double extractWeightFromNotes(String notes) {
         if (notes == null || notes.isEmpty()) {
             return 0.0;
         }
-        
-        // Try to extract weight from notes (format: "Weight: 5.0 kg")
-        Pattern pattern = Pattern.compile("Weight:\\s*(\\d+\\.?\\d*)\\s*kg");
-        Matcher matcher = pattern.matcher(notes);
-        
+        Matcher matcher = WEIGHT_PATTERN.matcher(notes);
         if (matcher.find()) {
             try {
                 return Double.parseDouble(matcher.group(1));
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException ex) {
                 return 0.0;
             }
         }
-        
         return 0.0;
     }
 
     private OrderResponse mapToResponse(Order order) {
-        // Extract weight from notes for frontend display
-        Double weightKg = extractWeightFromNotes(order.getNotes());
-        
         return OrderResponse.builder()
                 .id(order.getId().toString())
                 .user(OrderResponse.UserBasicInfo.builder()
@@ -221,7 +209,7 @@ public class OrderService {
                 .status(order.getStatus())
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
-                .weightKg(weightKg)
+                .weightKg(extractWeightFromNotes(order.getNotes()))
                 .build();
     }
 }

@@ -6,10 +6,13 @@ import com.washwise.shared.dto.ApiResponse;
 import com.washwise.shared.dto.PageResponse;
 import com.washwise.feature.service.dto.ServiceResponse;
 
-import com.washwise.feature.service.entity.ServiceEntity; 
+import com.washwise.feature.service.entity.ServiceEntity;
 import com.washwise.feature.service.repository.ServiceRepository;
+import com.washwise.shared.exception.ResourceNotFoundException;
 import com.washwise.shared.service.ImageService;
-import java.util.Map; 
+import org.springframework.cache.annotation.CacheEvict;
+import java.io.IOException;
+import java.util.Map;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +30,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.UUID;
 
 @RestController
@@ -206,27 +208,22 @@ public class ServiceController {
     }
 
     @PostMapping("/{id}/upload-image")
-    @Operation(summary = "Upload image", description = "Upload an image for a service")
-    public ResponseEntity<?> uploadServiceImage(
-            @PathVariable UUID id, // Changed to UUID to match your other endpoints
-            @RequestParam("file") MultipartFile file) {
-        try {
-            String imageUrl = imageService.uploadImage(file);
-            ServiceEntity service = serviceRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Service not found"));
-            
-            service.setImageUrl(imageUrl);
-            serviceRepository.save(service);
+    @PreAuthorize("hasRole('ADMIN')")
+    @CacheEvict(value = "services", allEntries = true)
+    @Operation(summary = "Upload service image", description = "Upload an image for a service (admin only)")
+    public ResponseEntity<ApiResponse<Map<String, String>>> uploadServiceImage(
+            @PathVariable UUID id,
+            @RequestParam("file") MultipartFile file) throws IOException {
+        log.info("POST /services/{}/upload-image - filename: {}", id, file.getOriginalFilename());
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("imageUrl", imageUrl);
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
+        ServiceEntity service = serviceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found with ID: " + id));
+
+        String imageUrl = imageService.uploadImage(file);
+        service.setImageUrl(imageUrl);
+        serviceRepository.save(service);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(Map.of("imageUrl", imageUrl), "Image uploaded successfully", HttpStatus.OK.value()));
     }
 }
