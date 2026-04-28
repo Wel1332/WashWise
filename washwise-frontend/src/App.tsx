@@ -8,27 +8,84 @@ import CustomerDashboard from './features/dashboard/pages/CustomerDashboard';
 import UserProfile from './features/profile/pages/UserProfile';
 import BookService from './features/order/pages/BookService';
 import MyOrders from './features/order/pages/MyOrders';
+import ProtectedRoute from './shared/components/ProtectedRoute';
+import NotFound from './shared/components/NotFound';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public routes - Home has its own navbar */}
+        {/* Public routes */}
         <Route path="/" element={<Home />} />
-        
-        {/* Auth routes - No navbar */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        
-        {/* Dashboard routes - No navbar (they have sidebar) */}
-        <Route path="/dashboard" element={<CustomerDashboard />} />
-        <Route path="/dashboard/admin" element={<AdminDashboard />} />
-        <Route path="/dashboard/staff" element={<StaffDashboard />} />
-        <Route path="/dashboard/customer" element={<CustomerDashboard />} />
-        <Route path="/book-service" element={<BookService />} />
-        <Route path="/my-orders" element={<MyOrders />} /> 
 
-        <Route path="/profile" element={<UserProfile />} />
+        {/* Customer routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute roles={['CUSTOMER']}>
+              <CustomerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/customer"
+          element={
+            <ProtectedRoute roles={['CUSTOMER']}>
+              <CustomerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/book-service"
+          element={
+            <ProtectedRoute roles={['CUSTOMER']}>
+              <BookService />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-orders"
+          element={
+            <ProtectedRoute roles={['CUSTOMER']}>
+              <MyOrders />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Staff routes */}
+        <Route
+          path="/dashboard/staff"
+          element={
+            <ProtectedRoute roles={['STAFF']}>
+              <StaffDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Admin routes */}
+        <Route
+          path="/dashboard/admin"
+          element={
+            <ProtectedRoute roles={['ADMIN']}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Shared authenticated routes */}
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <UserProfile />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Catch-all 404 */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, AlertCircle, Loader, Eye, EyeOff, ChevronLeft, Droplets } from 'lucide-react';
 import { authAPI } from '../../../shared/services/api';
+import { handleApiError } from '../../../shared/utils/errorHandler';
 import { useAuthStore } from '../store/authStore';
 
 export default function Login() {
@@ -37,8 +38,8 @@ export default function Login() {
         navigate('/dashboard'); // Default customer dashboard
       }
 
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+    } catch (err) {
+      setError(handleApiError(err));
     } finally {
       setLoading(false);
     }

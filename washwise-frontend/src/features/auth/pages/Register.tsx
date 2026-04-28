@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Lock, AlertCircle, Loader, Eye, EyeOff, ChevronLeft, Droplets } from 'lucide-react';
 import { authAPI } from '../../../shared/services/api';
+import { handleApiError } from '../../../shared/utils/errorHandler';
 import { useAuthStore } from '../store/authStore';
 
 export default function Register() {
@@ -44,9 +45,16 @@ export default function Register() {
       const { data } = await authAPI.register({ email, password, fullName, confirmPassword });
       const { id, email: userEmail, fullName: name, role, accessToken, refreshToken } = data.data;
       login({ id, email: userEmail, fullName: name, role }, accessToken, refreshToken);
-      navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      // Route to the correct dashboard based on the role returned by the backend.
+      if (role === 'ADMIN') {
+        navigate('/dashboard/admin');
+      } else if (role === 'STAFF') {
+        navigate('/dashboard/staff');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setError(handleApiError(err));
     } finally {
       setLoading(false);
     }

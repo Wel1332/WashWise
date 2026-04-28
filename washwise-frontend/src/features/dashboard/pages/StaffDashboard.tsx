@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Package, 
-  Clock, 
-  CheckCircle, 
+import {
+  Package,
+  Clock,
+  CheckCircle,
   TrendingUp,
   User,
   ArrowRight,
@@ -17,7 +16,6 @@ import { ordersAPI } from '../../../shared/services/api';
 import Sidebar from '../../../shared/components/Sidebar';
 
 export default function StaffDashboard() {
-  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('ALL');
   const [stats, setStats] = useState({
     total: 0,

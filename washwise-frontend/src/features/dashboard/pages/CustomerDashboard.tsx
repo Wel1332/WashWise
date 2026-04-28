@@ -75,7 +75,7 @@ export default function CustomerDashboard() {
     navigate('/book-service');
   };
 
-  const handleViewOrder = (orderId: string) => {
+  const handleViewOrder = () => {
     navigate('/my-orders');
   };
 
@@ -256,7 +256,7 @@ export default function CustomerDashboard() {
                       .map((order) => (
                         <div 
                           key={order.id} 
-                          onClick={() => handleViewOrder(order.id)}
+                          onClick={handleViewOrder}
                           className="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all cursor-pointer"
                         >
                           <div className="flex items-center justify-between mb-3">
@@ -309,7 +309,7 @@ export default function CustomerDashboard() {
                   {orders.slice(0, 5).map((order) => (
                     <div 
                       key={order.id} 
-                      onClick={() => handleViewOrder(order.id)}
+                      onClick={handleViewOrder}
                       className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all cursor-pointer"
                     >
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${

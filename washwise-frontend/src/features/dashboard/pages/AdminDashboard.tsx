@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { 
   Package, 
   Users, 
@@ -25,7 +25,6 @@ import Sidebar from '../../../shared/components/Sidebar';
 
 export default function AdminDashboard() {
   const { user } = useAuthStore();
-  const navigate = useNavigate();
   const location = useLocation();
   
   const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'overview');
