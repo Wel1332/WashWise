@@ -1,0 +1,34 @@
+# Build outputs
+target/
+*.jar
+!mvnw
+!mvnw.cmd
+
+# IDE / editor
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local tooling / caches
+.mvn/wrapper/maven-wrapper.jar
+.gradle/
+.m2/
+
+# Git / docs / runtime artifacts that don't belong in the image
+.git/
+.gitignore
+*.md
+HELP.md
+uploads/
+logs/
+*.log
+
+# Test outputs
+.coverage/
+surefire-reports/
