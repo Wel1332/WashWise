@@ -36,10 +36,10 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Value("${app.cors.allowed-origins}")
+    @Value("${CORS_ORIGINS:http://localhost:5173,http://localhost:3000}")
     private String allowedOrigins;
 
-    @Value("${app.cors.allowed-methods}")
+    @Value("${app.cors.allowed-methods:GET,POST,PUT,DELETE,PATCH,OPTIONS}")
     private String allowedMethods;
 
     @Value("${app.cors.allow-credentials:true}")
