@@ -122,6 +122,25 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle requests to unmapped URLs — return a clean 404 instead of falling
+     * through to the 500 catch-all.
+     */
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleNoResourceFound(
+            org.springframework.web.servlet.resource.NoResourceFoundException ex,
+            WebRequest request) {
+
+        log.debug("No resource: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(
+                        "Resource not found",
+                        null,
+                        HttpStatus.NOT_FOUND.value()
+                ));
+    }
+
+    /**
      * Handle file IO failures (e.g. multipart upload errors).
      */
     @ExceptionHandler(java.io.IOException.class)
