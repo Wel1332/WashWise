@@ -95,6 +95,10 @@ public class SecurityConfig {
                         // Static uploaded files
                         .requestMatchers("/uploads/**").permitAll()
 
+                        // Health probes / error dispatch / root — must be public so Render's
+                        // port scanner and Spring's error page don't loop on AuthorizationDenied.
+                        .requestMatchers("/", "/error", "/actuator/health").permitAll()
+
                         // Public auth endpoints
                         .requestMatchers("/api/v1/auth/health",
                                          "/api/v1/auth/register",
