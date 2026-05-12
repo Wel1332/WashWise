@@ -122,7 +122,7 @@ export default function CustomerDashboard() {
     return (
       <div className="min-h-screen bg-gray-50 flex">
         <Sidebar userRole="CUSTOMER" activePage="dashboard" />
-        <main className="flex-1 overflow-auto flex items-center justify-center">
+        <main className="flex-1 overflow-auto pt-14 md:pt-0 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading dashboard...</p>
@@ -137,8 +137,8 @@ export default function CustomerDashboard() {
     return (
       <div className="min-h-screen bg-gray-50 flex">
         <Sidebar userRole="CUSTOMER" activePage="dashboard" />
-        <main className="flex-1 overflow-auto">
-          <div className="p-8">
+        <main className="flex-1 overflow-auto pt-14 md:pt-0">
+          <div className="p-4 md:p-8">
             <div className="bg-red-50 border border-red-200 rounded-2xl p-6 flex items-start gap-4">
               <AlertCircle className="text-red-600 flex-shrink-0" size={24} />
               <div>
@@ -164,60 +164,60 @@ export default function CustomerDashboard() {
       <Sidebar userRole="CUSTOMER" activePage="dashboard" />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">
+      <main className="flex-1 overflow-auto pt-14 md:pt-0">
+        <div className="p-4 md:p-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
-            <p className="text-gray-600">Welcome back, {user?.fullName?.split(' ')[0]}!</p>
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-1 md:mb-2">Dashboard</h1>
+            <p className="text-sm md:text-base text-gray-600">Welcome back, {user?.fullName?.split(' ')[0]}!</p>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
             {/* Total Orders */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
-              <div className="flex items-start justify-between mb-4">
-                <div className="bg-blue-100 p-3 rounded-xl">
+            <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
+              <div className="flex items-start justify-between mb-3 md:mb-4">
+                <div className="bg-blue-100 p-2.5 md:p-3 rounded-xl">
                   <Package className="text-blue-600" size={24} />
                 </div>
                 <span className="text-xs font-medium text-gray-500 uppercase">Total Orders</span>
               </div>
-              <div className="text-4xl font-bold text-gray-900 mb-1">{stats.totalOrders}</div>
+              <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">{stats.totalOrders}</div>
               <p className="text-sm text-gray-600">All time</p>
             </div>
 
             {/* Completed */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
-              <div className="flex items-start justify-between mb-4">
-                <div className="bg-green-100 p-3 rounded-xl">
+            <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
+              <div className="flex items-start justify-between mb-3 md:mb-4">
+                <div className="bg-green-100 p-2.5 md:p-3 rounded-xl">
                   <TrendingUp className="text-green-600" size={24} />
                 </div>
                 <span className="text-xs font-medium text-gray-500 uppercase">Completed</span>
               </div>
-              <div className="text-4xl font-bold text-gray-900 mb-1">{stats.completed}</div>
+              <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">{stats.completed}</div>
               <p className="text-sm text-green-600 font-medium">Successfully delivered</p>
             </div>
 
             {/* Total Spent */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
-              <div className="flex items-start justify-between mb-4">
-                <div className="bg-purple-100 p-3 rounded-xl">
+            <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all sm:col-span-2 lg:col-span-1">
+              <div className="flex items-start justify-between mb-3 md:mb-4">
+                <div className="bg-purple-100 p-2.5 md:p-3 rounded-xl">
                   <Droplets className="text-purple-600" size={24} />
                 </div>
                 <span className="text-xs font-medium text-gray-500 uppercase">Total Spent</span>
               </div>
-              <div className="text-4xl font-bold text-gray-900 mb-1">₱{formatPrice(stats.totalSpent)}</div>
+              <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">₱{formatPrice(stats.totalSpent)}</div>
               <p className="text-sm text-gray-600">Lifetime value</p>
             </div>
           </div>
 
           {/* Two Column Layout */}
-          <div className="grid lg:grid-cols-2 gap-6">
+          <div className="grid lg:grid-cols-2 gap-4 md:gap-6">
             {/* Active Orders / CTA */}
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
               {stats.activeOrders === 0 ? (
                 // No Active Orders - Show CTA
-                <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-8 text-white relative overflow-hidden">
+                <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-6 md:p-8 text-white relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full opacity-20 -mr-32 -mt-32"></div>
                   <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-400 rounded-full opacity-20 -ml-24 -mb-24"></div>
                   
@@ -226,8 +226,8 @@ export default function CustomerDashboard() {
                       <Plus className="text-white" size={32} />
                     </div>
                     
-                    <h3 className="text-3xl font-bold mb-3">Need Laundry Service?</h3>
-                    <p className="text-blue-100 mb-6 text-lg">
+                    <h3 className="text-2xl md:text-3xl font-bold mb-3">Need Laundry Service?</h3>
+                    <p className="text-blue-100 mb-6 text-base md:text-lg">
                       Quick and easy booking in just a few clicks
                     </p>
                     
@@ -344,26 +344,26 @@ export default function CustomerDashboard() {
 
           {/* Quick Actions */}
           {orders.length > 0 && (
-            <div className="mt-8 grid md:grid-cols-3 gap-4">
+            <div className="mt-6 md:mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
               <button
                 onClick={handleBookService}
-                className="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-2xl font-semibold transition-all flex items-center justify-center gap-3 shadow-sm hover:shadow-lg"
+                className="bg-blue-600 hover:bg-blue-700 text-white p-4 md:p-6 rounded-2xl font-semibold transition-all flex items-center justify-center gap-3 shadow-sm hover:shadow-lg"
               >
                 <Plus size={24} />
                 Book New Service
               </button>
-              
+
               <button
                 onClick={() => navigate('/my-orders')}
-                className="bg-white hover:bg-gray-50 text-gray-900 p-6 rounded-2xl font-semibold transition-all flex items-center justify-center gap-3 border-2 border-gray-200"
+                className="bg-white hover:bg-gray-50 text-gray-900 p-4 md:p-6 rounded-2xl font-semibold transition-all flex items-center justify-center gap-3 border-2 border-gray-200"
               >
                 <Package size={24} />
                 View All Orders
               </button>
-            
+
               <button
                 onClick={() => navigate('/profile')}
-                className="bg-white hover:bg-gray-50 text-gray-900 p-6 rounded-2xl font-semibold transition-all flex items-center justify-center gap-3 border-2 border-gray-200"
+                className="bg-white hover:bg-gray-50 text-gray-900 p-4 md:p-6 rounded-2xl font-semibold transition-all flex items-center justify-center gap-3 border-2 border-gray-200"
               >
                 <UserCircle size={24} />
                 My Profile

@@ -156,61 +156,61 @@ export default function StaffDashboard() {
       <Sidebar userRole="STAFF" activePage="assigned-orders" />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">
+      <main className="flex-1 overflow-auto pt-14 md:pt-0">
+        <div className="p-4 md:p-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Staff Dashboard</h1>
-            <p className="text-gray-600">Manage and update order statuses</p>
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-1 md:mb-2">Staff Dashboard</h1>
+            <p className="text-sm md:text-base text-gray-600">Manage and update order statuses</p>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
             {/* Total */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
-              <div className="flex items-start justify-between mb-4">
-                <div className="bg-blue-100 p-3 rounded-xl">
+            <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
+              <div className="flex items-start justify-between mb-3 md:mb-4">
+                <div className="bg-blue-100 p-2.5 md:p-3 rounded-xl">
                   <Package className="text-blue-600" size={24} />
                 </div>
                 <span className="text-xs font-medium text-gray-500 uppercase">Total</span>
               </div>
-              <div className="text-4xl font-bold text-gray-900 mb-1">{stats.total}</div>
+              <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">{stats.total}</div>
               <p className="text-sm text-gray-600">All orders</p>
             </div>
 
             {/* Active */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
-              <div className="flex items-start justify-between mb-4">
-                <div className="bg-yellow-100 p-3 rounded-xl">
+            <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
+              <div className="flex items-start justify-between mb-3 md:mb-4">
+                <div className="bg-yellow-100 p-2.5 md:p-3 rounded-xl">
                   <Clock className="text-yellow-600" size={24} />
                 </div>
                 <span className="text-xs font-medium text-gray-500 uppercase">Active</span>
               </div>
-              <div className="text-4xl font-bold text-gray-900 mb-1">{stats.active}</div>
+              <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">{stats.active}</div>
               <p className="text-sm text-yellow-600 font-medium">In progress</p>
             </div>
 
             {/* Done */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
-              <div className="flex items-start justify-between mb-4">
-                <div className="bg-green-100 p-3 rounded-xl">
+            <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
+              <div className="flex items-start justify-between mb-3 md:mb-4">
+                <div className="bg-green-100 p-2.5 md:p-3 rounded-xl">
                   <CheckCircle className="text-green-600" size={24} />
                 </div>
                 <span className="text-xs font-medium text-gray-500 uppercase">Done</span>
               </div>
-              <div className="text-4xl font-bold text-gray-900 mb-1">{stats.completed}</div>
+              <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">{stats.completed}</div>
               <p className="text-sm text-green-600 font-medium">Completed</p>
             </div>
 
             {/* Pending */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
-              <div className="flex items-start justify-between mb-4">
-                <div className="bg-purple-100 p-3 rounded-xl">
+            <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
+              <div className="flex items-start justify-between mb-3 md:mb-4">
+                <div className="bg-purple-100 p-2.5 md:p-3 rounded-xl">
                   <TrendingUp className="text-purple-600" size={24} />
                 </div>
                 <span className="text-xs font-medium text-gray-500 uppercase">Pending</span>
               </div>
-              <div className="text-4xl font-bold text-gray-900 mb-1">{stats.pending}</div>
+              <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">{stats.pending}</div>
               <p className="text-sm text-gray-600">Awaiting action</p>
             </div>
           </div>
@@ -318,27 +318,30 @@ export default function StaffDashboard() {
               </div>
             </div>
 
-            {/* Table Header */}
-            <div className="grid grid-cols-7 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              <div>ORDER #</div>
-              <div>CUSTOMER</div>
-              <div>SERVICE</div>
-              <div>WEIGHT</div>
-              <div>PICKUP</div>
-              <div>STATUS</div>
-              <div>ACTION</div>
-            </div>
-
-            {/* Table Body */}
-            <div className="divide-y divide-gray-200">
-              {filteredOrders.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <Package size={48} className="mx-auto mb-3 opacity-30" />
-                  <p>No orders found</p>
+            {/* Table */}
+            <div className="overflow-x-auto">
+              <div className="min-w-[900px]">
+                {/* Table Header */}
+                <div className="grid grid-cols-7 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <div>ORDER #</div>
+                  <div>CUSTOMER</div>
+                  <div>SERVICE</div>
+                  <div>WEIGHT</div>
+                  <div>PICKUP</div>
+                  <div>STATUS</div>
+                  <div>ACTION</div>
                 </div>
-              ) : (
-                filteredOrders.map((order) => (
-                  <div key={order.id} className="grid grid-cols-7 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors">
+
+                {/* Table Body */}
+                <div className="divide-y divide-gray-200">
+                  {filteredOrders.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                      <Package size={48} className="mx-auto mb-3 opacity-30" />
+                      <p>No orders found</p>
+                    </div>
+                  ) : (
+                    filteredOrders.map((order) => (
+                      <div key={order.id} className="grid grid-cols-7 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors">
                     {/* Order Number */}
                     <div>
                       <p className="font-bold text-blue-600">WW-2026-{String(order.id).slice(0, 3)}</p>
@@ -402,9 +405,11 @@ export default function StaffDashboard() {
                         </button>
                       )}
                     </div>
-                  </div>
-                ))
-              )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

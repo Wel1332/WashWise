@@ -174,58 +174,58 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar userRole="ADMIN" activePage={activeTab} />
 
-      <main className="flex-1 overflow-auto relative">
+      <main className="flex-1 overflow-auto relative pt-14 md:pt-0">
         
         {/* ==================== OVERVIEW TAB ====================== */}
         {activeTab === 'overview' && (
-          <div className="p-8 animate-in fade-in duration-200">
+          <div className="p-4 md:p-8 animate-in fade-in duration-200">
             <div className="mb-8">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">Overview</h1>
+              <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">Overview</h1>
               <p className="text-gray-600">Welcome back, {user?.fullName?.split(' ')[0]}! Here's what's happening.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="bg-blue-100 p-3 rounded-xl">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
+              <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
+                <div className="flex items-start justify-between mb-3 md:mb-4">
+                  <div className="bg-blue-100 p-2.5 md:p-3 rounded-xl">
                     <Package className="text-blue-600" size={24} />
                   </div>
                   <span className="text-xs font-medium text-gray-500 uppercase">Total Orders</span>
                 </div>
-                <div className="text-4xl font-bold text-gray-900 mb-1">{stats.totalOrders}</div>
+                <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">{stats.totalOrders}</div>
                 <p className="text-sm text-gray-600">All time</p>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="bg-yellow-100 p-3 rounded-xl">
+              <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
+                <div className="flex items-start justify-between mb-3 md:mb-4">
+                  <div className="bg-yellow-100 p-2.5 md:p-3 rounded-xl">
                     <Clock className="text-yellow-600" size={24} />
                   </div>
                   <span className="text-xs font-medium text-gray-500 uppercase">Active</span>
                 </div>
-                <div className="text-4xl font-bold text-gray-900 mb-1">{stats.activeOrders}</div>
+                <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">{stats.activeOrders}</div>
                 <p className="text-sm text-yellow-600 font-medium">In progress</p>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="bg-green-100 p-3 rounded-xl">
+              <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
+                <div className="flex items-start justify-between mb-3 md:mb-4">
+                  <div className="bg-green-100 p-2.5 md:p-3 rounded-xl">
                     <TrendingUp className="text-green-600" size={24} />
                   </div>
                   <span className="text-xs font-medium text-gray-500 uppercase">Revenue</span>
                 </div>
-                <div className="text-4xl font-bold text-gray-900 mb-1">₱{stats.revenue.toFixed(0)}</div>
+                <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">₱{stats.revenue.toFixed(0)}</div>
                 <p className="text-sm text-green-600 font-medium">Total earned</p>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="bg-purple-100 p-3 rounded-xl">
+              <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all">
+                <div className="flex items-start justify-between mb-3 md:mb-4">
+                  <div className="bg-purple-100 p-2.5 md:p-3 rounded-xl">
                     <Users className="text-purple-600" size={24} />
                   </div>
                   <span className="text-xs font-medium text-gray-500 uppercase">Users</span>
                 </div>
-                <div className="text-4xl font-bold text-gray-900 mb-1">{stats.users}</div>
+                <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">{stats.users}</div>
                 <p className="text-sm text-gray-600">Registered</p>
               </div>
             </div>
@@ -299,49 +299,53 @@ export default function AdminDashboard() {
 
         {/* ==================== SERVICES TAB ====================== */}
         {activeTab === 'services' && (
-          <div className="p-8 animate-in fade-in duration-200">
-            <div className="mb-8 flex justify-between items-end">
+          <div className="p-4 md:p-8 animate-in fade-in duration-200">
+            <div className="mb-6 md:mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
               <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">Services Management</h1>
-                <p className="text-gray-600">Add, update, or remove laundry services.</p>
+                <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">Services Management</h1>
+                <p className="text-sm md:text-base text-gray-600">Add, update, or remove laundry services.</p>
               </div>
-              <button 
+              <button
                 onClick={() => setIsServiceModalOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-colors shadow-sm flex items-center gap-2"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-colors shadow-sm flex items-center justify-center gap-2 self-start sm:self-auto"
               >
                 <Plus size={18} /> Add New Service
               </button>
             </div>
-            
+
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-              <div className="grid grid-cols-5 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                <div className="col-span-2">SERVICE NAME</div>
-                <div>CATEGORY</div>
-                <div>PRICE</div>
-                <div>DURATION</div>
-              </div>
-              <div className="divide-y divide-gray-200">
-                {servicesList.map((service) => (
-                  <div key={service.id} className="grid grid-cols-5 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors">
-                    <div className="col-span-2">
-                      <p className="font-bold text-gray-900 text-sm">{service.name}</p>
-                      <p className="text-xs text-gray-500 truncate mt-0.5 pr-4">{service.description}</p>
-                    </div>
-                    <div>
-                      <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
-                        {service.category}
-                      </span>
-                    </div>
-                    <div className="text-sm font-bold text-gray-900">₱{parseFloat(service.price).toFixed(0)}/kg</div>
-                    <div className="text-sm text-gray-500">{service.duration}</div>
+              <div className="overflow-x-auto">
+                <div className="min-w-[640px]">
+                  <div className="grid grid-cols-5 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <div className="col-span-2">SERVICE NAME</div>
+                    <div>CATEGORY</div>
+                    <div>PRICE</div>
+                    <div>DURATION</div>
                   </div>
-                ))}
-                {servicesList.length === 0 && (
-                  <div className="p-12 text-center text-gray-500 flex flex-col items-center">
-                    <Settings size={48} className="text-gray-300 mb-4" />
-                    <p>No services found. Click "Add New Service" to create one.</p>
+                  <div className="divide-y divide-gray-200">
+                    {servicesList.map((service) => (
+                      <div key={service.id} className="grid grid-cols-5 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors">
+                        <div className="col-span-2">
+                          <p className="font-bold text-gray-900 text-sm">{service.name}</p>
+                          <p className="text-xs text-gray-500 truncate mt-0.5 pr-4">{service.description}</p>
+                        </div>
+                        <div>
+                          <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
+                            {service.category}
+                          </span>
+                        </div>
+                        <div className="text-sm font-bold text-gray-900">₱{parseFloat(service.price).toFixed(0)}/kg</div>
+                        <div className="text-sm text-gray-500">{service.duration}</div>
+                      </div>
+                    ))}
+                    {servicesList.length === 0 && (
+                      <div className="p-12 text-center text-gray-500 flex flex-col items-center">
+                        <Settings size={48} className="text-gray-300 mb-4" />
+                        <p>No services found. Click "Add New Service" to create one.</p>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
@@ -349,43 +353,47 @@ export default function AdminDashboard() {
 
         {/* ===================== ORDERS TAB ======================= */}
         {activeTab === 'orders' && (
-          <div className="p-8 animate-in fade-in duration-200">
+          <div className="p-4 md:p-8 animate-in fade-in duration-200">
             <div className="mb-8">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">All Orders</h1>
+              <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">All Orders</h1>
               <p className="text-gray-600">View and track all customer orders in the system.</p>
             </div>
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-              <div className="grid grid-cols-6 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                <div>ORDER ID</div>
-                <div>CUSTOMER</div>
-                <div>SERVICE</div>
-                <div>PRICE</div>
-                <div>STATUS</div>
-                <div>DATE</div>
-              </div>
-              <div className="divide-y divide-gray-200">
-                {orders.map((order) => (
-                  <div key={order.id} className="grid grid-cols-6 gap-4 px-6 py-4 items-center hover:bg-gray-50">
-                    <div className="font-bold text-blue-600 text-sm">WW-2026-{String(order.id).slice(0, 3)}</div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{order.user?.fullName}</p>
-                      <p className="text-xs text-gray-500">{order.user?.email}</p>
-                    </div>
-                    <div className="text-sm text-gray-900">{order.service?.name}</div>
-                    <div className="text-sm font-bold text-gray-900">₱{parseFloat(order.totalPrice).toFixed(0)}</div>
-                    <div>
-                       <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.status)}`}>
-                         {order.status}
-                       </span>
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {new Date(order.createdAt).toLocaleDateString('en-US')}
-                    </div>
+              <div className="overflow-x-auto">
+                <div className="min-w-[800px]">
+                  <div className="grid grid-cols-6 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <div>ORDER ID</div>
+                    <div>CUSTOMER</div>
+                    <div>SERVICE</div>
+                    <div>PRICE</div>
+                    <div>STATUS</div>
+                    <div>DATE</div>
                   </div>
-                ))}
-                {orders.length === 0 && (
-                   <div className="p-8 text-center text-gray-500">No orders found.</div>
-                )}
+                  <div className="divide-y divide-gray-200">
+                    {orders.map((order) => (
+                      <div key={order.id} className="grid grid-cols-6 gap-4 px-6 py-4 items-center hover:bg-gray-50">
+                        <div className="font-bold text-blue-600 text-sm">WW-2026-{String(order.id).slice(0, 3)}</div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{order.user?.fullName}</p>
+                          <p className="text-xs text-gray-500">{order.user?.email}</p>
+                        </div>
+                        <div className="text-sm text-gray-900">{order.service?.name}</div>
+                        <div className="text-sm font-bold text-gray-900">₱{parseFloat(order.totalPrice).toFixed(0)}</div>
+                        <div>
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.status)}`}>
+                            {order.status}
+                          </span>
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {new Date(order.createdAt).toLocaleDateString('en-US')}
+                        </div>
+                      </div>
+                    ))}
+                    {orders.length === 0 && (
+                      <div className="p-8 text-center text-gray-500">No orders found.</div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -393,56 +401,60 @@ export default function AdminDashboard() {
 
         {/* ====================== USERS TAB ======================= */}
         {activeTab === 'users' && (
-          <div className="p-8 animate-in fade-in duration-200">
+          <div className="p-4 md:p-8 animate-in fade-in duration-200">
             <div className="mb-8">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">User Management</h1>
+              <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">User Management</h1>
               <p className="text-gray-600">Manage customers, staff, and admin accounts.</p>
             </div>
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-              <div className="grid grid-cols-5 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                <div>NAME</div>
-                <div>EMAIL</div>
-                <div>ROLE</div>
-                <div>JOINED</div>
-                <div>ACTION</div>
-              </div>
-              <div className="divide-y divide-gray-200">
-                {usersList.map((u) => (
-                  <div key={u.id} className="grid grid-cols-5 gap-4 px-6 py-4 items-center hover:bg-gray-50">
-                    <div className="font-bold text-gray-900 text-sm">{u.fullName}</div>
-                    <div className="text-sm text-gray-600">{u.email}</div>
-                    <div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        u.role === 'ADMIN' ? 'bg-gray-900 text-white' :
-                        u.role === 'STAFF' ? 'bg-purple-100 text-purple-700' :
-                        'bg-blue-100 text-blue-700'
-                      }`}>
-                        {u.role.charAt(0) + u.role.slice(1).toLowerCase()}
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {new Date(u.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-                    </div>
-                    <div>
-                      {u.id !== user?.id ? (
-                        <select
-                          value={u.role}
-                          onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                          className="border border-gray-300 rounded-lg text-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-600 outline-none text-gray-700 bg-white cursor-pointer"
-                        >
-                          <option value="CUSTOMER">Customer</option>
-                          <option value="STAFF">Staff</option>
-                          <option value="ADMIN">Admin</option>
-                        </select>
-                      ) : (
-                        <span className="text-xs text-gray-400 italic">Current User</span>
-                      )}
-                    </div>
+              <div className="overflow-x-auto">
+                <div className="min-w-[760px]">
+                  <div className="grid grid-cols-5 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <div>NAME</div>
+                    <div>EMAIL</div>
+                    <div>ROLE</div>
+                    <div>JOINED</div>
+                    <div>ACTION</div>
                   </div>
-                ))}
-                {usersList.length === 0 && (
-                  <div className="p-8 text-center text-gray-500">No users found.</div>
-                )}
+                  <div className="divide-y divide-gray-200">
+                    {usersList.map((u) => (
+                      <div key={u.id} className="grid grid-cols-5 gap-4 px-6 py-4 items-center hover:bg-gray-50">
+                        <div className="font-bold text-gray-900 text-sm">{u.fullName}</div>
+                        <div className="text-sm text-gray-600">{u.email}</div>
+                        <div>
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            u.role === 'ADMIN' ? 'bg-gray-900 text-white' :
+                            u.role === 'STAFF' ? 'bg-purple-100 text-purple-700' :
+                            'bg-blue-100 text-blue-700'
+                          }`}>
+                            {u.role.charAt(0) + u.role.slice(1).toLowerCase()}
+                          </span>
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {new Date(u.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                        </div>
+                        <div>
+                          {u.id !== user?.id ? (
+                            <select
+                              value={u.role}
+                              onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                              className="border border-gray-300 rounded-lg text-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-600 outline-none text-gray-700 bg-white cursor-pointer"
+                            >
+                              <option value="CUSTOMER">Customer</option>
+                              <option value="STAFF">Staff</option>
+                              <option value="ADMIN">Admin</option>
+                            </select>
+                          ) : (
+                            <span className="text-xs text-gray-400 italic">Current User</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {usersList.length === 0 && (
+                      <div className="p-8 text-center text-gray-500">No users found.</div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

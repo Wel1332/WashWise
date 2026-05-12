@@ -228,12 +228,12 @@ export default function BookService() {
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar userRole="CUSTOMER" activePage="book-service" />
 
-      <main className="flex-1 overflow-auto relative">
-        <div className="p-12">
+      <main className="flex-1 overflow-auto relative pt-14 md:pt-0">
+        <div className="p-4 md:p-8 lg:p-12">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Book a Service</h1>
-            <p className="text-lg text-gray-600">Schedule your laundry pickup and delivery</p>
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-1 md:mb-2">Book a Service</h1>
+            <p className="text-sm md:text-lg text-gray-600">Schedule your laundry pickup and delivery</p>
           </div>
 
           {error && (
@@ -247,14 +247,14 @@ export default function BookService() {
           )}
 
           {/* Service Selection */}
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Select Service Type</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="mb-6 md:mb-8">
+            <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4">Select Service Type</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
               {services.map((service) => (
                 <button
                   key={service.id}
                   onClick={() => setSelectedService(service.id)}
-                  className={`bg-white border-2 rounded-2xl p-6 text-left transition-all hover:shadow-lg ${
+                  className={`bg-white border-2 rounded-2xl p-4 md:p-6 text-left transition-all hover:shadow-lg ${
                     selectedService === service.id
                       ? 'shadow-lg scale-[1.02]'
                       : 'border-gray-200 shadow-sm'
@@ -283,19 +283,19 @@ export default function BookService() {
           </div>
 
           {/* Weight Input */}
-          <div className="mb-8">
-            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="bg-purple-100 rounded-xl w-10 h-10 flex items-center justify-center">
+          <div className="mb-6 md:mb-8">
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 md:p-8">
+              <div className="flex items-center gap-3 mb-5 md:mb-6">
+                <div className="bg-purple-100 rounded-xl w-10 h-10 flex items-center justify-center shrink-0">
                   <Scale className="text-purple-600" size={20} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">Laundry Weight</h2>
+                  <h2 className="text-lg md:text-xl font-bold text-gray-900">Laundry Weight</h2>
                   <p className="text-gray-600 text-xs">Enter the estimated weight of your laundry</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 <div>
                   <label className="font-semibold text-gray-900 text-sm mb-2 flex items-center gap-2">
                     <Scale size={16} className="text-gray-600" />
@@ -314,11 +314,11 @@ export default function BookService() {
                 </div>
 
                 {selectedService && weight && parseFloat(weight) > 0 && (
-                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-6 flex flex-col justify-center">
+                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-4 md:p-6 flex flex-col justify-center">
                     <p className="font-semibold text-gray-600 text-xs uppercase tracking-wide mb-2">Estimated Total</p>
-                    <div className="flex items-baseline gap-2">
-                      <span className="font-bold text-gray-900 text-4xl">₱{totalPrice.toFixed(0)}</span>
-                      <span className="text-gray-600 text-sm">
+                    <div className="flex flex-wrap items-baseline gap-2">
+                      <span className="font-bold text-gray-900 text-3xl md:text-4xl">₱{totalPrice.toFixed(0)}</span>
+                      <span className="text-gray-600 text-xs md:text-sm">
                         ({weight} kg × ₱{services.find(s => s.id === selectedService)?.pricePerKg.toFixed(0)}/kg)
                       </span>
                     </div>
@@ -328,16 +328,16 @@ export default function BookService() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
+
             {/* ====== PICKUP DETAILS ====== */}
-            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="bg-blue-100 rounded-xl w-10 h-10 flex items-center justify-center">
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 md:p-8">
+              <div className="flex items-center gap-3 mb-5 md:mb-6">
+                <div className="bg-blue-100 rounded-xl w-10 h-10 flex items-center justify-center shrink-0">
                   <Calendar className="text-blue-600" size={20} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">Pickup Details</h2>
+                  <h2 className="text-lg md:text-xl font-bold text-gray-900">Pickup Details</h2>
                   <p className="text-gray-600 text-xs">When should we collect your laundry?</p>
                 </div>
               </div>
@@ -420,14 +420,14 @@ export default function BookService() {
             </div>
 
             {/* ====== DELIVERY DETAILS ====== */}
-            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8 flex flex-col">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="bg-green-100 rounded-xl w-10 h-10 flex items-center justify-center">
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 md:p-8 flex flex-col">
+              <div className="flex items-center justify-between gap-3 mb-5 md:mb-6">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="bg-green-100 rounded-xl w-10 h-10 flex items-center justify-center shrink-0">
                     <PackageIcon className="text-green-600" size={20} />
                   </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-900">Delivery Details</h2>
+                  <div className="min-w-0">
+                    <h2 className="text-lg md:text-xl font-bold text-gray-900">Delivery Details</h2>
                     <p className="text-gray-600 text-xs">
                       {selectedService 
                         ? `Minimum turnaround: ${minDeliveryDays} day(s)` 
@@ -503,8 +503,8 @@ export default function BookService() {
             </div>
 
             {/* Special Instructions */}
-            <div className="xl:col-span-2 bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Special Instructions</h2>
+            <div className="xl:col-span-2 bg-white border border-gray-200 rounded-2xl shadow-sm p-4 md:p-8">
+              <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4">Special Instructions</h2>
               <textarea
                 value={specialInstructions}
                 onChange={(e) => setSpecialInstructions(e.target.value)}
@@ -516,20 +516,20 @@ export default function BookService() {
           </div>
 
           {/* Order Summary */}
-          <div className="mt-6 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl shadow-lg p-8">
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-              <div className="text-white flex-1">
-                <h2 className="text-2xl font-bold mb-1">
+          <div className="mt-6 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl shadow-lg p-4 md:p-8">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 md:gap-6">
+              <div className="text-white flex-1 min-w-0">
+                <h2 className="text-xl md:text-2xl font-bold mb-1">
                   {selectedService ? services.find(s => s.id === selectedService)?.name : "Select a Service"}
                 </h2>
-                <p className="text-blue-100 text-sm mb-3">
+                <p className="text-blue-100 text-sm mb-3 break-words">
                   {selectedService && pickupDate && pickupTime
                     ? `Pickup: ${pickupDate} (${TIME_SLOTS.find(t => t.id === pickupTime)?.label})`
                     : "Complete the form to book your service"}
                 </p>
                 {weight && parseFloat(weight) > 0 && selectedService && (
-                  <div className="flex items-baseline gap-3">
-                    <span className="font-bold text-white text-3xl">
+                  <div className="flex flex-wrap items-baseline gap-2 md:gap-3">
+                    <span className="font-bold text-white text-2xl md:text-3xl">
                       ₱{totalPrice.toFixed(0)}
                     </span>
                     <span className="text-blue-100 text-sm">
@@ -538,7 +538,7 @@ export default function BookService() {
                   </div>
                 )}
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 <button
                   onClick={() => {
                     setSelectedService(null);

@@ -1,23 +1,18 @@
 import { useState, useEffect } from "react";
-import { 
-  Camera, 
-  Eye, 
-  EyeOff, 
-  Lock, 
-  Mail, 
-  User as UserIcon, 
-  LogOut,
-  LayoutDashboard,
-  ShoppingCart,
-  Package,
-  UserCircle,
+import {
+  Camera,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  User as UserIcon,
   AlertTriangle,
-  Shield // <-- Added Shield icon for the privacy modal
+  Shield
 } from "lucide-react";
 import { useAuthStore } from '../../../features/auth/store/authStore';
 import { useNavigate } from 'react-router-dom';
-import { Droplets } from 'lucide-react';
 import { profileAPI } from '../../../shared/services/api';
+import Sidebar from '../../../shared/components/Sidebar';
 
 interface Profile {
   id: string;
@@ -176,11 +171,6 @@ export default function UserProfile() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   // Account Action Handlers
   const handleDownloadData = () => {
     if (!profile) return;
@@ -228,94 +218,15 @@ export default function UserProfile() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-600 p-2 rounded-xl">
-              <Droplets className="text-white" size={24} />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">WashWise</h1>
-              <p className="text-xs text-gray-500">Customer Portal</p>
-            </div>
-          </div>
-        </div>
-
-        <nav className="flex-1 p-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            MENU
-          </p>
-          <div className="space-y-1">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-700 hover:bg-gray-100 transition-all"
-            >
-              <LayoutDashboard size={20} />
-              <span>Dashboard</span>
-            </button>
-
-            <button
-              onClick={() => navigate('/book-service')}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-700 hover:bg-gray-100 transition-all"
-            >
-              <ShoppingCart size={20} />
-              <span>Book Service</span>
-            </button>
-
-            <button
-              onClick={() => navigate('/my-orders')}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-700 hover:bg-gray-100 transition-all"
-            >
-              <Package size={20} />
-              <span>My Orders</span>
-            </button>
-
-            <button
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium bg-blue-600 text-white transition-all"
-            >
-              <UserCircle size={20} />
-              <span>Profile</span>
-            </button>
-          </div>
-        </nav>
-
-        <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center overflow-hidden">
-              {profileImage ? (
-                <img 
-                  src={profileImage} 
-                  alt="Profile" 
-                  className="w-full h-full object-cover" 
-                  onError={() => setProfileImage(null)} 
-                />
-              ) : (
-                <UserIcon className="text-white" size={24} />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-900 text-sm truncate">{displayProfile.fullName}</p>
-              <p className="text-xs text-gray-500 truncate">{displayProfile.email}</p>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg font-medium transition-all"
-          >
-            <LogOut size={18} />
-            <span>Logout</span>
-          </button>
-        </div>
-      </aside>
+      <Sidebar userRole={(user?.role as 'CUSTOMER' | 'STAFF' | 'ADMIN') || 'CUSTOMER'} activePage="profile" />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto relative">
-        <div className="p-12">
+      <main className="flex-1 overflow-auto relative pt-14 md:pt-0">
+        <div className="p-4 md:p-8 lg:p-12">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Profile Settings</h1>
-            <p className="text-lg text-gray-600">Manage your account information and security</p>
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-1 md:mb-2">Profile Settings</h1>
+            <p className="text-sm md:text-lg text-gray-600">Manage your account information and security</p>
           </div>
 
           {/* Success/Error Messages */}
@@ -331,10 +242,10 @@ export default function UserProfile() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
             {/* Profile Photo Section */}
-            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Profile Photo</h2>
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 md:p-8">
+              <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-5 md:mb-6">Profile Photo</h2>
               
               <div className="flex flex-col items-center">
                 <div className="relative mb-6">
@@ -401,8 +312,8 @@ export default function UserProfile() {
             </div>
 
             {/* Personal Information Section */}
-            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Personal Information</h2>
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 md:p-8">
+              <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-5 md:mb-6">Personal Information</h2>
               
               <div className="space-y-5">
                 <div>
@@ -487,13 +398,13 @@ export default function UserProfile() {
             </div>
 
             {/* Change Password Section */}
-            <div className="lg:col-span-2 bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
-              <div className="flex items-center gap-3 mb-6">
+            <div className="lg:col-span-2 bg-white border border-gray-200 rounded-2xl shadow-sm p-4 md:p-8">
+              <div className="flex items-center gap-3 mb-5 md:mb-6">
                 <div className="bg-red-50 rounded-xl w-10 h-10 flex items-center justify-center">
                   <Lock className="text-red-600" size={20} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">Change Password</h2>
+                  <h2 className="text-lg md:text-xl font-bold text-gray-900">Change Password</h2>
                   <p className="text-xs text-gray-600">Update your password to keep your account secure</p>
                 </div>
               </div>
@@ -600,8 +511,8 @@ export default function UserProfile() {
           </div>
 
           {/* Account Actions */}
-          <div className="mt-6 bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Account Actions</h2>
+          <div className="mt-6 bg-white border border-gray-200 rounded-2xl shadow-sm p-4 md:p-8">
+            <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4">Account Actions</h2>
             <div className="flex flex-wrap gap-3">
               <button 
                 onClick={handleDownloadData}

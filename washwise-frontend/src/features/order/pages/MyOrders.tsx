@@ -138,7 +138,7 @@ export default function MyOrders() {
       <Sidebar userRole="CUSTOMER" activePage="my-orders" />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto relative">
+      <main className="flex-1 overflow-auto relative pt-14 md:pt-0">
         
         {/* Cancel Confirmation Modal */}
         {orderToCancel && (
@@ -174,11 +174,11 @@ export default function MyOrders() {
           </div>
         )}
 
-        <div className="p-12">
+        <div className="p-4 md:p-8 lg:p-12">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">My Orders</h1>
-            <p className="text-lg text-gray-600">Track and manage your laundry orders</p>
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-1 md:mb-2">My Orders</h1>
+            <p className="text-sm md:text-lg text-gray-600">Track and manage your laundry orders</p>
           </div>
 
           {/* Success Message Banner */}
@@ -214,7 +214,7 @@ export default function MyOrders() {
           )}
 
           {/* Filter Tabs */}
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-6">
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 md:p-6 mb-6">
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setFilterStatus("ALL")}
@@ -278,54 +278,54 @@ export default function MyOrders() {
                 return (
                   <div key={order.id} className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
                     {/* Order Header */}
-                    <div className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-4">
+                    <div className="p-4 md:p-6">
+                      <div className="flex items-start justify-between gap-3 mb-4">
+                        <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
                           <div
-                            className="rounded-xl w-14 h-14 flex items-center justify-center shrink-0"
+                            className="rounded-xl w-12 h-12 md:w-14 md:h-14 flex items-center justify-center shrink-0"
                             style={{ backgroundColor: serviceStyle.bgColor }}
                           >
                             <PackageIcon size={24} style={{ color: serviceStyle.color }} />
                           </div>
-                          <div>
-                            <div className="flex items-center gap-3 mb-1">
-                              <h3 className="font-semibold text-gray-900 text-lg">{order.service?.name || 'Laundry Service'}</h3>
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-1">
+                              <h3 className="font-semibold text-gray-900 text-base md:text-lg">{order.service?.name || 'Laundry Service'}</h3>
                               <span
-                                className="px-3 py-1 rounded-lg text-xs font-semibold"
+                                className="px-2.5 py-1 rounded-lg text-xs font-semibold"
                                 style={{ backgroundColor: statusInfo.bgColor, color: statusInfo.color }}
                               >
                                 {statusInfo.label}
                               </span>
                             </div>
-                            <p className="text-gray-600 text-sm">Order: WW-2026-{String(order.id).slice(0, 5)}</p>
+                            <p className="text-gray-600 text-xs md:text-sm truncate">Order: WW-2026-{String(order.id).slice(0, 5)}</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold text-gray-900 text-xl mb-0.5">₱{parseFloat(order.totalPrice || 0).toFixed(2)}</p>
+                        <div className="text-right shrink-0">
+                          <p className="font-bold text-gray-900 text-lg md:text-xl mb-0.5">₱{parseFloat(order.totalPrice || 0).toFixed(2)}</p>
                           <p className="text-gray-600 text-xs">{order.weightKg ? `${order.weightKg} kg` : 'Standard'}</p>
                         </div>
                       </div>
 
                       {/* Quick Info */}
-                      <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-4">
                         <div className="flex items-center gap-2">
-                          <Calendar size={16} className="text-gray-500" />
-                          <div>
+                          <Calendar size={16} className="text-gray-500 shrink-0" />
+                          <div className="min-w-0">
                             <p className="font-semibold text-gray-900 text-xs">Scheduled Date</p>
-                            <p className="text-gray-600 text-xs">{formatDate(order.scheduledDate)}</p>
+                            <p className="text-gray-600 text-xs truncate">{formatDate(order.scheduledDate)}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <PackageIcon size={16} className="text-gray-500" />
-                          <div>
+                          <PackageIcon size={16} className="text-gray-500 shrink-0" />
+                          <div className="min-w-0">
                             <p className="font-semibold text-gray-900 text-xs">Last Updated</p>
-                            <p className="text-gray-600 text-xs">{formatDate(order.updatedAt)}</p>
+                            <p className="text-gray-600 text-xs truncate">{formatDate(order.updatedAt)}</p>
                           </div>
                         </div>
                       </div>
 
                       {/* Actions */}
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <button
                           onClick={() => toggleOrderExpansion(order.id)}
                           className="flex-1 bg-blue-600 text-white rounded-xl px-4 py-2.5 text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
@@ -353,7 +353,7 @@ export default function MyOrders() {
 
                     {/* Expanded Details */}
                     {isExpanded && (
-                      <div className="border-t border-gray-200 bg-gray-50 p-6">
+                      <div className="border-t border-gray-200 bg-gray-50 p-4 md:p-6">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                           {/* Order Details */}
                           <div>
