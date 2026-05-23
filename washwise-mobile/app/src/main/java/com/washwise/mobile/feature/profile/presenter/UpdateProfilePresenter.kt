@@ -66,6 +66,28 @@ class UpdateProfilePresenter(
         }
     }
 
+    override fun uploadImage(bytes: ByteArray, mimeType: String, filename: String) {
+        val v = view ?: return
+        if (bytes.isEmpty()) {
+            v.showError("Selected image is empty")
+            return
+        }
+        if (bytes.size > MAX_IMAGE_BYTES) {
+            v.showError("Image is too large (max 10 MB)")
+            return
+        }
+        v.showUploadingImage()
+        inFlight = scope.launch {
+            repository.uploadProfileImage(bytes, mimeType, filename)
+                .onSuccess { profile ->
+                    view?.renderProfile(profile)
+                    view?.showImageUploadSuccess()
+                }
+                .onFailure { error -> view?.showError(error.message ?: "Failed to upload image") }
+            view?.hideUploadingImage()
+        }
+    }
+
     override fun openChangePassword() {
         // View handles navigation — presenter just signals intent if routing becomes more complex.
     }
@@ -93,5 +115,6 @@ class UpdateProfilePresenter(
 
     companion object {
         private val PHONE_REGEX = Regex("^[+]?[0-9\\s()-]{7,20}$")
+        private const val MAX_IMAGE_BYTES = 10 * 1024 * 1024
     }
 }

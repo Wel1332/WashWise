@@ -19,10 +19,6 @@ import com.washwise.mobile.feature.order.data.OrderResponse
 import com.washwise.mobile.shared.util.SharedPrefManager
 import java.util.Locale
 
-/**
- * View role for the Admin Overview tab. Renders stats / breakdown / recent
- * orders pushed by [AdminOverviewPresenter].
- */
 class AdminOverviewFragment : Fragment(), AdminOverviewContract.View {
 
     private var _binding: FragmentAdminOverviewBinding? = null

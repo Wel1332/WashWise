@@ -11,6 +11,11 @@ interface OrderTrackingContract {
         fun showLoading()
         fun hideLoading()
         fun renderOrder(order: OrderResponse, currentStepIndex: Int, percentComplete: Int)
+        fun setCancelAvailable(available: Boolean)
+        fun showCancelling()
+        fun hideCancelling()
+        fun showCancelSuccess()
+        fun confirmCancel()
         fun showError(message: String)
         fun close()
     }
@@ -19,6 +24,8 @@ interface OrderTrackingContract {
         fun attach(view: View)
         fun detach()
         fun load(orderId: String)
+        fun onCancelClicked()
+        fun confirmCancel()
     }
 
     /** Fixed list of tracking steps shared between Presenter and View. */

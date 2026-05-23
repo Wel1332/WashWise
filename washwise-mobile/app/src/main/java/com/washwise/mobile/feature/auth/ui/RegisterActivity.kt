@@ -12,9 +12,6 @@ import com.washwise.mobile.feature.auth.presenter.RegisterContract.RegisterInput
 import com.washwise.mobile.feature.auth.presenter.RegisterPresenter
 import com.washwise.mobile.ui.main.MainActivity
 
-/**
- * View role for the Register screen. Delegates to [RegisterPresenter].
- */
 class RegisterActivity : AppCompatActivity(), RegisterContract.View {
 
     private lateinit var binding: ActivityRegisterBinding

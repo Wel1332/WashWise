@@ -2,11 +2,6 @@ package com.washwise.mobile.feature.auth.data
 
 import com.washwise.mobile.shared.api.ApiService
 import com.washwise.mobile.shared.api.RetrofitClient
-
-/**
- * Data boundary for the auth slice. Wraps the API calls and normalizes backend
- * envelope responses into [Result] so presenters never have to reach for Retrofit.
- */
 class AuthRepository(
     private val api: ApiService = RetrofitClient.instance
 ) {

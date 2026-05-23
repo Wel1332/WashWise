@@ -10,10 +10,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-/**
- * Presenter for the Orders history screen.
- */
 class OrdersPresenter(
     private val repository: OrderRepository = OrderRepository(),
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)

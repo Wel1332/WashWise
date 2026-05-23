@@ -61,6 +61,17 @@
                         android:textSize="28sp"
                         android:textStyle="bold"
                         tools:text="AJ" />
+
+                    <ImageView
+                        android:id="@+id/ivAvatar"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_avatar_rounded"
+                        android:clipToOutline="true"
+                        android:contentDescription="Profile picture"
+                        android:outlineProvider="background"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone" />
                 </FrameLayout>
 
                 <TextView

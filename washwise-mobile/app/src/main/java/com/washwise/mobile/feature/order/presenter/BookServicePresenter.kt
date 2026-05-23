@@ -13,15 +13,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-/**
- * Presenter for the Book Service screen.
- *
- * - Locates the backend ServiceResponse that matches the preset passed from the
- * dashboard (by id, then by name) so we know the service id to submit.
- * - Recomputes the running total whenever weight changes.
- * - Validates the booking form before calling the repository.
- */
 class BookServicePresenter(
     private val orderRepository: OrderRepository = OrderRepository(),
     private val serviceRepository: ServiceRepository = ServiceRepository(),

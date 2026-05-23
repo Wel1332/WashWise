@@ -7,10 +7,6 @@ import com.washwise.mobile.R
 import com.washwise.mobile.databinding.ActivityAdminMainBinding
 import com.washwise.mobile.feature.profile.ui.ProfileFragment
 
-/**
- * App shell for admin users. Hosts Overview / Services / Users tabs plus the
- * shared Profile fragment behind a 4-tab bottom nav.
- */
 class AdminMainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAdminMainBinding

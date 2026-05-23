@@ -10,7 +10,7 @@ data class UserResponse(
     val address: String?,
     val city: String?,
     val zipCode: String?,
-    val profileImageUrl: String?,
+    val profileImageBase64: String?,
     val createdAt: String,
     val updatedAt: String
 )

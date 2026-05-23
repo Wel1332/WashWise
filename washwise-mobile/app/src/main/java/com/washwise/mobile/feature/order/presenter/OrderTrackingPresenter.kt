@@ -19,6 +19,8 @@ class OrderTrackingPresenter(
 
     private var view: OrderTrackingContract.View? = null
     private var inFlight: Job? = null
+    private var currentOrderId: String? = null
+    private var currentStatus: String? = null
 
     override fun attach(view: OrderTrackingContract.View) {
         this.view = view
@@ -32,6 +34,7 @@ class OrderTrackingPresenter(
 
     override fun load(orderId: String) {
         val v = view ?: return
+        currentOrderId = orderId
         v.showLoading()
         inFlight = scope.launch {
             repository.getMyOrders()
@@ -41,9 +44,7 @@ class OrderTrackingPresenter(
                         view?.showError("Order not found")
                         view?.close()
                     } else {
-                        val stepIndex = currentStepIndex(order.status)
-                        val percent = ((stepIndex + 1) * 100f / Step.values().size).toInt()
-                        view?.renderOrder(order, stepIndex, percent.coerceIn(0, 100))
+                        renderOrder(order)
                     }
                 }
                 .onFailure { error ->
@@ -51,6 +52,43 @@ class OrderTrackingPresenter(
                 }
             view?.hideLoading()
         }
+    }
+
+    override fun onCancelClicked() {
+        if (canCancel(currentStatus)) view?.confirmCancel()
+    }
+
+    override fun confirmCancel() {
+        val v = view ?: return
+        val orderId = currentOrderId ?: return
+        if (!canCancel(currentStatus)) return
+        v.showCancelling()
+        inFlight = scope.launch {
+            repository.cancelOrder(orderId)
+                .onSuccess { order ->
+                    renderOrder(order)
+                    view?.showCancelSuccess()
+                }
+                .onFailure { error ->
+                    view?.showError(error.message ?: "Couldn't cancel order")
+                }
+            view?.hideCancelling()
+        }
+    }
+
+    private fun renderOrder(order: com.washwise.mobile.feature.order.data.OrderResponse) {
+        currentStatus = order.status
+        val stepIndex = currentStepIndex(order.status)
+        val percent = ((stepIndex + 1) * 100f / Step.values().size).toInt()
+        view?.renderOrder(order, stepIndex, percent.coerceIn(0, 100))
+        view?.setCancelAvailable(canCancel(order.status))
+    }
+
+    private fun canCancel(status: String?): Boolean =
+        (status ?: "").uppercase() !in TERMINAL_STATUSES
+
+    companion object {
+        private val TERMINAL_STATUSES = setOf("COMPLETED", "DELIVERED", "CANCELLED", "CANCELED")
     }
 
     private fun currentStepIndex(status: String?): Int = when ((status ?: "").uppercase()) {

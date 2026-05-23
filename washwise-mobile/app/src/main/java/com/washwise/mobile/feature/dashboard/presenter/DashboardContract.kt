@@ -3,9 +3,7 @@ package com.washwise.mobile.feature.dashboard.presenter
 import com.washwise.mobile.feature.dashboard.ui.DashboardService
 import com.washwise.mobile.feature.order.data.OrderResponse
 
-/**
- * MVP contract for the Home / Dashboard screen.
- */
+
 interface DashboardContract {
 
     interface View {

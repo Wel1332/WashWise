@@ -11,9 +11,6 @@ import com.washwise.mobile.databinding.ItemAdminRecentOrderBinding
 import com.washwise.mobile.feature.order.data.OrderResponse
 import java.util.Locale
 
-/**
- * Compact recent-order row for the Admin Overview tab.
- */
 class AdminRecentOrderAdapter :
     ListAdapter<OrderResponse, AdminRecentOrderAdapter.RecentOrderViewHolder>(OrderDiff()) {
 

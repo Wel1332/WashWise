@@ -9,9 +9,6 @@ import com.washwise.mobile.databinding.ItemAdminServiceBinding
 import com.washwise.mobile.feature.service.data.ServiceResponse
 import java.util.Locale
 
-/**
- * Renders a service row in the Admin Services tab.
- */
 class AdminServiceAdapter :
     ListAdapter<ServiceResponse, AdminServiceAdapter.ServiceViewHolder>(ServiceDiff()) {
 

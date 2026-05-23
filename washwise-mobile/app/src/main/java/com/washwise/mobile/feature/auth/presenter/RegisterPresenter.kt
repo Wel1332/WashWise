@@ -11,10 +11,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-/**
- * Presenter for the Register screen. Validates input, invokes the repository
- * and persists the returned session.
- */
 class RegisterPresenter(
     private val repository: AuthRepository = AuthRepository(),
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)

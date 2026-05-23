@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,6 +32,10 @@ import java.util.regex.Pattern;
 public class OrderService {
 
     private static final Pattern WEIGHT_PATTERN = Pattern.compile("Weight:\\s*(\\d+\\.?\\d*)\\s*kg");
+
+    private static final Set<String> NON_CANCELLABLE_STATUSES = Set.of(
+            "COMPLETED", "DELIVERED", "CANCELLED", "CANCELED"
+    );
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
@@ -102,6 +107,30 @@ public class OrderService {
         Order updated = orderRepository.save(order);
         log.info("Order {} updated", updated.getId());
         return mapToResponse(updated);
+    }
+
+    @Transactional
+    public OrderResponse cancelOrder(String orderId, String email) {
+        Order order = orderRepository.findById(parseUuid(orderId))
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        boolean isOwner = order.getUser().getId().equals(user.getId());
+        if (!isOwner && !user.hasRole(UserRole.ADMIN)) {
+            throw new AccessDeniedException("Not authorized to cancel this order");
+        }
+
+        String current = order.getStatus() == null ? "" : order.getStatus().toUpperCase();
+        if (NON_CANCELLABLE_STATUSES.contains(current)) {
+            throw new IllegalArgumentException("Order is already " + current.toLowerCase() + " and cannot be cancelled");
+        }
+
+        order.setStatus("CANCELLED");
+        Order saved = orderRepository.save(order);
+        log.info("Order {} cancelled by {}", saved.getId(), email);
+        return mapToResponse(saved);
     }
 
     @Transactional

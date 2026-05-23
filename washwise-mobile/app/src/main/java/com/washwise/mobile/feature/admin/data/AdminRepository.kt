@@ -5,10 +5,7 @@ import com.washwise.mobile.feature.service.data.ServiceResponse
 import com.washwise.mobile.shared.api.ApiService
 import com.washwise.mobile.shared.api.RetrofitClient
 
-/**
- * Data boundary for the admin slice. Wraps the user / service / order endpoints
- * the admin tabs need so presenters never touch Retrofit.
- */
+
 class AdminRepository(
     private val api: ApiService = RetrofitClient.instance
 ) {

@@ -8,9 +8,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.washwise.mobile.databinding.ItemAdminStatusBreakdownBinding
 import com.washwise.mobile.feature.admin.presenter.AdminOverviewContract.StatusBucket
 
-/**
- * Renders a single status breakdown row (label + count + horizontal progress bar).
- */
 class AdminBreakdownAdapter :
     ListAdapter<StatusBucket, AdminBreakdownAdapter.BreakdownViewHolder>(BreakdownDiff()) {
 

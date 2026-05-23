@@ -11,10 +11,6 @@ import com.washwise.mobile.databinding.FragmentOrdersBinding
 import com.washwise.mobile.feature.order.data.OrderResponse
 import com.washwise.mobile.feature.order.presenter.OrdersContract
 import com.washwise.mobile.feature.order.presenter.OrdersPresenter
-
-/**
- * View role for the Orders history screen. Delegates to [OrdersPresenter].
- */
 class OrdersFragment : Fragment(), OrdersContract.View {
 
     private var _binding: FragmentOrdersBinding? = null

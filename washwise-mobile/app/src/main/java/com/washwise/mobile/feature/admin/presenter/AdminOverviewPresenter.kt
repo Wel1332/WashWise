@@ -12,10 +12,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-/**
- * Presenter for the Admin Overview tab. Loads orders + users in parallel and
- * derives stats / breakdown / recent list in pure Kotlin.
- */
+
 class AdminOverviewPresenter(
     private val repository: AdminRepository = AdminRepository(),
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)

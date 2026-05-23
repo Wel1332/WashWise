@@ -24,6 +24,7 @@ import com.washwise.mobile.feature.admin.data.AdminUser
 import com.washwise.mobile.feature.admin.data.CreateServiceRequest
 import com.washwise.mobile.feature.admin.data.UpdateRoleRequest
 
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -56,6 +57,12 @@ interface ApiService {
     @DELETE("profile")
     suspend fun deleteAccount(): Response<ApiResponse<Any>>
 
+    @Multipart
+    @POST("profile/upload-image")
+    suspend fun uploadProfileImage(
+        @Part file: MultipartBody.Part
+    ): Response<ApiResponse<UserResponse>>
+
     // ==========================================
     // Orders
     // ==========================================
@@ -74,8 +81,8 @@ interface ApiService {
         @Body request: UpdateOrderRequest
     ): Response<ApiResponse<OrderResponse>>
 
-    @DELETE("orders/{id}")
-    suspend fun cancelOrder(@Path("id") id: String): Response<ApiResponse<Any>>
+    @POST("orders/{id}/cancel")
+    suspend fun cancelOrder(@Path("id") id: String): Response<ApiResponse<OrderResponse>>
 
     // ==========================================
     // Services

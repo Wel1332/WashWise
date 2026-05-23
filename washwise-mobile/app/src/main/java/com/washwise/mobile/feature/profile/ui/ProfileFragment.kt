@@ -12,6 +12,7 @@ import com.washwise.mobile.feature.auth.ui.LoginActivity
 import com.washwise.mobile.feature.profile.data.UserResponse
 import com.washwise.mobile.feature.profile.presenter.ProfileContract
 import com.washwise.mobile.feature.profile.presenter.ProfilePresenter
+import com.washwise.mobile.shared.util.Base64Image
 import com.washwise.mobile.shared.util.SharedPrefManager
 
 /**
@@ -93,6 +94,16 @@ class ProfileFragment : Fragment(), ProfileContract.View {
         binding.tvAddressSubtitle.text = profile.address
             ?.takeIf { it.isNotBlank() }
             ?: "Add a pickup address"
+
+        val bitmap = Base64Image.decode(profile.profileImageBase64)
+        if (bitmap != null) {
+            binding.ivAvatar.setImageBitmap(bitmap)
+            binding.ivAvatar.visibility = View.VISIBLE
+            binding.tvAvatarInitials.visibility = View.GONE
+        } else {
+            binding.ivAvatar.visibility = View.GONE
+            binding.tvAvatarInitials.visibility = View.VISIBLE
+        }
     }
 
     override fun renderStats(orders: Int, completed: Int, rating: String) {

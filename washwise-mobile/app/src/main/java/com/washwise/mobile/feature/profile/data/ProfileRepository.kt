@@ -2,6 +2,9 @@ package com.washwise.mobile.feature.profile.data
 
 import com.washwise.mobile.shared.api.ApiService
 import com.washwise.mobile.shared.api.RetrofitClient
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 /**
  * Single data boundary for the profile slice. Presenters depend on this — never
@@ -27,6 +30,21 @@ class ProfileRepository(
             error(body?.message ?: "Failed to update profile (HTTP ${response.code()})")
         }
         body.data ?: error("Update response missing data")
+    }
+
+    suspend fun uploadProfileImage(
+        bytes: ByteArray,
+        mimeType: String,
+        filename: String
+    ): Result<UserResponse> = runCatching {
+        val body = bytes.toRequestBody(mimeType.toMediaTypeOrNull())
+        val part = MultipartBody.Part.createFormData("file", filename, body)
+        val response = api.uploadProfileImage(part)
+        val payload = response.body()
+        if (!response.isSuccessful || payload?.success != true) {
+            error(payload?.message ?: "Failed to upload image (HTTP ${response.code()})")
+        }
+        payload.data ?: error("Upload response missing data")
     }
 
     suspend fun changePassword(request: ChangePasswordRequest): Result<Unit> = runCatching {

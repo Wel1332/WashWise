@@ -72,6 +72,16 @@ public class OrderController {
                 ApiResponse.success(order, "Order updated successfully", HttpStatus.OK.value()));
     }
 
+    @PostMapping("/{id}/cancel")
+    @Operation(summary = "Cancel order", description = "Owner or admin can cancel an order that hasn't been completed or cancelled")
+    public ResponseEntity<ApiResponse<OrderResponse>> cancelOrder(@PathVariable String id) {
+        String email = currentEmail();
+        log.info("POST /orders/{}/cancel - requested by {}", id, email);
+        OrderResponse order = orderService.cancelOrder(id, email);
+        return ResponseEntity.ok(
+                ApiResponse.success(order, "Order cancelled successfully", HttpStatus.OK.value()));
+    }
+
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete order", description = "Owner or admin can delete an order")
     public ResponseEntity<ApiResponse<Void>> deleteOrder(@PathVariable String id) {

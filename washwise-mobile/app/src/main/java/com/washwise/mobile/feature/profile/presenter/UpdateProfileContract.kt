@@ -15,8 +15,11 @@ interface UpdateProfileContract {
         fun hideLoading()
         fun showSaving()
         fun hideSaving()
+        fun showUploadingImage()
+        fun hideUploadingImage()
         fun renderProfile(profile: UserResponse)
         fun showSaveSuccess()
+        fun showImageUploadSuccess()
         fun showError(message: String)
         fun showFieldError(field: Field, message: String)
         fun close()
@@ -27,6 +30,7 @@ interface UpdateProfileContract {
         fun detach()
         fun loadProfile()
         fun save(input: UpdateInput)
+        fun uploadImage(bytes: ByteArray, mimeType: String, filename: String)
         fun openChangePassword()
     }
 

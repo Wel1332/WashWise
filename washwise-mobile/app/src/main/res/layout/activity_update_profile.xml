@@ -88,9 +88,13 @@
                 android:padding="16dp">
 
                 <FrameLayout
+                    android:id="@+id/avatarContainer"
                     android:layout_width="56dp"
                     android:layout_height="56dp"
-                    android:background="@drawable/bg_avatar_rounded">
+                    android:background="@drawable/bg_avatar_rounded"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackgroundBorderless">
 
                     <TextView
                         android:id="@+id/tvAvatarInitials"
@@ -102,6 +106,24 @@
                         android:textSize="20sp"
                         android:textStyle="bold"
                         tools:text="AJ" />
+
+                    <ImageView
+                        android:id="@+id/ivAvatar"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_avatar_rounded"
+                        android:clipToOutline="true"
+                        android:contentDescription="Profile picture"
+                        android:outlineProvider="background"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone" />
+
+                    <ProgressBar
+                        android:id="@+id/progressAvatar"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:visibility="gone" />
                 </FrameLayout>
 
                 <LinearLayout

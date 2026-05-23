@@ -15,11 +15,6 @@ import com.washwise.mobile.feature.admin.data.CreateServiceRequest
 import com.washwise.mobile.feature.admin.presenter.AdminServicesContract
 import com.washwise.mobile.feature.admin.presenter.AdminServicesPresenter
 import com.washwise.mobile.feature.service.data.ServiceResponse
-
-/**
- * View role for the Admin Services tab. Shows the catalog and exposes a
- * BottomSheet form for creating a new service.
- */
 class AdminServicesFragment : Fragment(), AdminServicesContract.View {
 
     private var _binding: FragmentAdminServicesBinding? = null

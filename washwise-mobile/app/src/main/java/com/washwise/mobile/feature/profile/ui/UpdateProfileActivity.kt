@@ -1,9 +1,12 @@
 package com.washwise.mobile.feature.profile.ui
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.washwise.mobile.databinding.ActivityUpdateProfileBinding
 import com.washwise.mobile.feature.profile.data.UserResponse
@@ -11,6 +14,7 @@ import com.washwise.mobile.feature.profile.presenter.UpdateProfileContract
 import com.washwise.mobile.feature.profile.presenter.UpdateProfileContract.Field
 import com.washwise.mobile.feature.profile.presenter.UpdateProfileContract.UpdateInput
 import com.washwise.mobile.feature.profile.presenter.UpdateProfilePresenter
+import com.washwise.mobile.shared.util.Base64Image
 
 /**
  * View role in the MVP triad. Delegates all business logic to [UpdateProfilePresenter].
@@ -19,6 +23,12 @@ class UpdateProfileActivity : AppCompatActivity(), UpdateProfileContract.View {
 
     private lateinit var binding: ActivityUpdateProfileBinding
     private val presenter: UpdateProfileContract.Presenter = UpdateProfilePresenter()
+
+    private val pickImage = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        if (uri != null) handlePickedImage(uri)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +51,25 @@ class UpdateProfileActivity : AppCompatActivity(), UpdateProfileContract.View {
         binding.rowChangePassword.setOnClickListener {
             startActivity(Intent(this, ChangePasswordActivity::class.java))
         }
+        binding.avatarContainer.setOnClickListener {
+            pickImage.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
+        }
+    }
+
+    private fun handlePickedImage(uri: Uri) {
+        val mimeType = contentResolver.getType(uri) ?: "image/jpeg"
+        val bytes = runCatching {
+            contentResolver.openInputStream(uri)?.use { it.readBytes() }
+        }.getOrNull()
+        if (bytes == null) {
+            Toast.makeText(this, "Couldn't read the selected image", Toast.LENGTH_LONG).show()
+            return
+        }
+        val extension = mimeType.substringAfter("/", "jpg")
+        val filename = "profile_${System.currentTimeMillis()}.$extension"
+        presenter.uploadImage(bytes, mimeType, filename)
     }
 
     private fun collectInput(): UpdateInput = UpdateInput(
@@ -71,10 +100,30 @@ class UpdateProfileActivity : AppCompatActivity(), UpdateProfileContract.View {
         binding.progressSave.visibility = View.GONE
     }
 
+    override fun showUploadingImage() {
+        binding.avatarContainer.isEnabled = false
+        binding.progressAvatar.visibility = View.VISIBLE
+    }
+
+    override fun hideUploadingImage() {
+        binding.avatarContainer.isEnabled = true
+        binding.progressAvatar.visibility = View.GONE
+    }
+
     override fun renderProfile(profile: UserResponse) {
         binding.tvHeaderName.text = profile.fullName.ifBlank { "Your Profile" }
         binding.tvHeaderEmail.text = profile.email
         binding.tvAvatarInitials.text = initialsOf(profile.fullName)
+
+        val bitmap = Base64Image.decode(profile.profileImageBase64)
+        if (bitmap != null) {
+            binding.ivAvatar.setImageBitmap(bitmap)
+            binding.ivAvatar.visibility = View.VISIBLE
+            binding.tvAvatarInitials.visibility = View.GONE
+        } else {
+            binding.ivAvatar.visibility = View.GONE
+            binding.tvAvatarInitials.visibility = View.VISIBLE
+        }
 
         binding.etFullName.setText(profile.fullName)
         binding.etPhone.setText(profile.phoneNumber.orEmpty())
@@ -86,6 +135,10 @@ class UpdateProfileActivity : AppCompatActivity(), UpdateProfileContract.View {
 
     override fun showSaveSuccess() {
         Toast.makeText(this, "Profile saved", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showImageUploadSuccess() {
+        Toast.makeText(this, "Profile photo updated", Toast.LENGTH_SHORT).show()
     }
 
     override fun showError(message: String) {

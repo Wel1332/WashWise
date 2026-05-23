@@ -1,5 +1,6 @@
 package com.washwise.mobile.feature.order.ui
 
+import android.app.AlertDialog
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -30,6 +31,7 @@ class OrderTrackingActivity : AppCompatActivity(), OrderTrackingContract.View {
         setContentView(binding.root)
 
         binding.btnBack.setOnClickListener { finish() }
+        binding.btnCancelOrder.setOnClickListener { presenter.onCancelClicked() }
 
         val orderId = intent.getStringExtra(EXTRA_ORDER_ID)
         if (orderId.isNullOrBlank()) {
@@ -81,6 +83,35 @@ class OrderTrackingActivity : AppCompatActivity(), OrderTrackingContract.View {
         }
 
         buildSteps(currentStepIndex)
+    }
+
+    override fun setCancelAvailable(available: Boolean) {
+        binding.cancelContainer.visibility = if (available) View.VISIBLE else View.GONE
+    }
+
+    override fun showCancelling() {
+        binding.btnCancelOrder.isEnabled = false
+        binding.btnCancelOrder.text = ""
+        binding.progressCancel.visibility = View.VISIBLE
+    }
+
+    override fun hideCancelling() {
+        binding.btnCancelOrder.isEnabled = true
+        binding.btnCancelOrder.text = "Cancel order"
+        binding.progressCancel.visibility = View.GONE
+    }
+
+    override fun showCancelSuccess() {
+        Toast.makeText(this, "Order cancelled", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun confirmCancel() {
+        AlertDialog.Builder(this)
+            .setTitle("Cancel this order?")
+            .setMessage("This will mark the order as cancelled. You can't undo this.")
+            .setPositiveButton("Cancel order") { _, _ -> presenter.confirmCancel() }
+            .setNegativeButton("Keep order", null)
+            .show()
     }
 
     override fun showError(message: String) {

@@ -11,10 +11,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-/**
- * Presenter for the Login screen. Pure JVM — no Android imports — so it can be
- * unit-tested independently of the Activity.
- */
 class LoginPresenter(
     private val repository: AuthRepository = AuthRepository(),
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)

@@ -12,11 +12,6 @@ import com.washwise.mobile.databinding.FragmentAdminUsersBinding
 import com.washwise.mobile.feature.admin.data.AdminUser
 import com.washwise.mobile.feature.admin.presenter.AdminUsersContract
 import com.washwise.mobile.feature.admin.presenter.AdminUsersPresenter
-
-/**
- * View role for the Admin Users tab. Shows a list of users; tapping "Change Role"
- * opens an AlertDialog with the three role options.
- */
 class AdminUsersFragment : Fragment(), AdminUsersContract.View {
 
     private var _binding: FragmentAdminUsersBinding? = null

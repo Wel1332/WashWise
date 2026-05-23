@@ -12,11 +12,6 @@ import com.washwise.mobile.databinding.ItemAdminUserBinding
 import com.washwise.mobile.feature.admin.data.AdminUser
 import java.text.SimpleDateFormat
 import java.util.Locale
-
-/**
- * Renders a user row in the Admin Users tab. The current user gets a "You" badge
- * and no role-change button (admins shouldn't demote themselves accidentally).
- */
 class AdminUserAdapter(
     private val onChangeRole: (AdminUser) -> Unit
 ) : ListAdapter<AdminUserAdapter.Item, AdminUserAdapter.UserViewHolder>(UserDiff()) {

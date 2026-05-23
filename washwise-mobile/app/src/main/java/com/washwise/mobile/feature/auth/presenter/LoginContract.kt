@@ -1,8 +1,6 @@
 package com.washwise.mobile.feature.auth.presenter
 
-/**
- * MVP contract for the Login screen. See [LoginPresenter] for the implementation.
- */
+
 interface LoginContract {
 
     interface View {

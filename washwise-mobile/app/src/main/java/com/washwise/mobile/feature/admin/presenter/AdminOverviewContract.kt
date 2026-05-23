@@ -2,10 +2,6 @@ package com.washwise.mobile.feature.admin.presenter
 
 import com.washwise.mobile.feature.order.data.OrderResponse
 
-/**
- * MVP contract for the Admin Overview tab — high-level stats, status breakdown
- * and the 5 most recent orders.
- */
 interface AdminOverviewContract {
 
     interface View {

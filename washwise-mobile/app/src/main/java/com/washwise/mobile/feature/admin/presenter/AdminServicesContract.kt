@@ -3,9 +3,7 @@ package com.washwise.mobile.feature.admin.presenter
 import com.washwise.mobile.feature.admin.data.CreateServiceRequest
 import com.washwise.mobile.feature.service.data.ServiceResponse
 
-/**
- * MVP contract for the Admin Services tab — list services and create new ones.
- */
+
 interface AdminServicesContract {
 
     interface View {

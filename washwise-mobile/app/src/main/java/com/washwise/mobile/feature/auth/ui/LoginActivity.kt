@@ -14,10 +14,6 @@ import com.washwise.mobile.feature.admin.ui.AdminMainActivity
 import com.washwise.mobile.feature.staff.ui.StaffMainActivity
 import com.washwise.mobile.ui.main.MainActivity
 
-/**
- * View role of the Login MVP triad. Only renders state and forwards input to
- * the [LoginPresenter]. Holds no business logic or network calls.
- */
 class LoginActivity : AppCompatActivity(), LoginContract.View {
 
     private lateinit var binding: ActivityLoginBinding

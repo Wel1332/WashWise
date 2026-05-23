@@ -28,11 +28,12 @@ class OrderRepository(
         body.data ?: error("Create order response missing data")
     }
 
-    suspend fun cancelOrder(id: String): Result<Unit> = runCatching {
+    suspend fun cancelOrder(id: String): Result<OrderResponse> = runCatching {
         val response = api.cancelOrder(id)
         val body = response.body()
         if (!response.isSuccessful || body?.success != true) {
             error(body?.message ?: "Failed to cancel order (HTTP ${response.code()})")
         }
+        body.data ?: error("Cancel response missing data")
     }
 }

@@ -17,9 +17,7 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Locale
 
-/**
- * Presenter for the Dashboard. Composes greeting + service tiles + active order.
- */
+
 class DashboardPresenter(
     private val serviceRepository: ServiceRepository = ServiceRepository(),
     private val orderRepository: OrderRepository = OrderRepository(),

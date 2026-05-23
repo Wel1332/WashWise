@@ -13,17 +13,14 @@ import com.washwise.mobile.feature.dashboard.presenter.DashboardContract
 import com.washwise.mobile.feature.dashboard.presenter.DashboardPresenter
 import com.washwise.mobile.feature.order.data.OrderResponse
 import com.washwise.mobile.feature.order.ui.BookServiceActivity
-
-/**
- * View role for the Dashboard. Renders what [DashboardPresenter] pushes and
- * forwards clicks. No network or business logic.
- */
+import com.washwise.mobile.feature.order.ui.OrderTrackingActivity
 class DashboardFragment : Fragment(), DashboardContract.View {
 
     private var _binding: FragmentDashboardBinding? = null
     private val binding get() = _binding!!
     private lateinit var serviceAdapter: ServiceAdapter
     private val presenter: DashboardContract.Presenter = DashboardPresenter()
+    private var activeOrderId: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,6 +58,13 @@ class DashboardFragment : Fragment(), DashboardContract.View {
         binding.offerCard1.setOnClickListener(openBook)
         binding.offerCard2.setOnClickListener(openBook)
         binding.offerCard3.setOnClickListener(openBook)
+        binding.llActiveOrder.setOnClickListener {
+            val id = activeOrderId ?: return@setOnClickListener
+            startActivity(
+                Intent(requireContext(), OrderTrackingActivity::class.java)
+                    .putExtra(OrderTrackingActivity.EXTRA_ORDER_ID, id)
+            )
+        }
     }
 
     private fun openBookService(service: DashboardService?) {
@@ -86,10 +90,12 @@ class DashboardFragment : Fragment(), DashboardContract.View {
 
     override fun renderActiveOrder(order: OrderResponse?) {
         if (order == null) {
+            activeOrderId = null
             binding.llActiveOrder.visibility = View.GONE
             binding.tvNoActiveOrder.visibility = View.GONE
             return
         }
+        activeOrderId = order.id
         binding.llActiveOrder.visibility = View.VISIBLE
         binding.tvNoActiveOrder.visibility = View.GONE
         binding.tvActiveOrderId.text = "WW-${order.id.take(8).uppercase()}"
